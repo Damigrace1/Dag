@@ -45,7 +45,7 @@ class SearchB extends StatelessWidget {
                       ),
                       controller: searchCont,
                       decoration: InputDecoration.collapsed(
-                          hintText: 'Start type',
+                          hintText: 'Start searching',
                           hintStyle: CustomTextStyle(color: Colors.grey,)
                       ),
                     ),

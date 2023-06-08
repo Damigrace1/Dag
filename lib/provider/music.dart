@@ -1,3 +1,4 @@
+import 'package:dag/music/domain/song_model.dart';
 import 'package:flutter/cupertino.dart';
 
 class MusicProvider  extends ChangeNotifier{
@@ -15,23 +16,50 @@ class MusicProvider  extends ChangeNotifier{
     notifyListeners();
   }
 
-  String _startV = '0 : 0';
-  String get startV => _startV;
-  set startV (String v){
+  Duration _startV =  const Duration();
+  Duration get startV => _startV;
+  set startV (Duration v){
     _startV= v;
     notifyListeners();
   }
-  String _endV = '0 : 0';
-  String get endV => _endV;
-  set endV (String v){
+  Duration _endV = const Duration();
+  Duration get endV => _endV;
+  set endV (Duration v){
     _endV = v;
     notifyListeners();
   }
 
-  double _sV = 0.00;
-  double get sV => _sV;
-  set sV (double v){
+  SongModel? _song;
+  SongModel? get song => _song;
+  set song (SongModel? v){
+    _song = v;
+    notifyListeners();
+  }
+
+  Duration _sV = const Duration();
+  Duration get sV => _sV;
+  set sV (Duration v){
     _sV = v;
+    notifyListeners();
+  }
+
+  Map<String, dynamic> _dispSong = {};
+  Map<String, dynamic> get dispSong => _dispSong;
+  set dispSong(Map<String, dynamic> v){
+    _dispSong = v;
+    notifyListeners();
+  }
+
+  bool _inSession = false;
+  bool get inSession => _inSession;
+  set inSession (bool val){
+    _inSession = val;
+    notifyListeners();
+  }
+  Duration _bV = const Duration();
+  Duration get bV => _bV;
+  set bV (Duration v){
+    _bV = v;
     notifyListeners();
   }
 }

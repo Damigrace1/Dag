@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../../../provider/music.dart';
+import '../../../utils/functions.dart';
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
 
@@ -35,6 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
   @override
   Widget build(BuildContext context) {
+
     return SafeArea(
       child: SingleChildScrollView(
         child: Column(
@@ -42,7 +44,8 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
           SizedBox(height: 20.h,),
           Center(
-            child: SearchB(rOnly: false, autoFocus: true,
+            child: SearchB(rOnly: false, autoFocus:
+            context.read<MusicProvider>().inSession ? false : true,
             onChanged: (val)async{
         // for(var l in ls){
         //   searchRes?.add(SongModel(id:
@@ -59,74 +62,78 @@ class _SearchScreenState extends State<SearchScreen> {
             FutureBuilder(
               future: fetchSongsList(sT!),
               builder: (context, d) {
+               if (d.connectionState == ConnectionState.done)
+                   {
+                     return ListView.builder(
+                       shrinkWrap: true,
+                       addAutomaticKeepAlives: false,
+                       addRepaintBoundaries: false,
+                       physics: const NeverScrollableScrollPhysics(),
+                       itemCount: d.data?.length,
+                       itemBuilder: (BuildContext ctxt, int index) {
 
-                return d.data != null
-                    ? ListView.builder(
-                  shrinkWrap: true,
-                  addAutomaticKeepAlives: false,
-                  addRepaintBoundaries: false,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: d.data?.length,
-                  itemBuilder: (BuildContext ctxt, int index) {
+                         return Padding(
+                             padding: const EdgeInsets.only(top: 5, bottom: 5),
+                             child: ListTile(
+                               leading: CachedNetworkImage(
+                                 width: 60,
+                                 height: 60,
+                                 imageUrl: d.data![index]['lowResImage'].toString(),
+                                 imageBuilder: (context, imageProvider) => DecoratedBox(
+                                   decoration: BoxDecoration(
+                                     borderRadius: BorderRadius.circular(12),
+                                     image: DecorationImage(
+                                       image: imageProvider,
+                                       centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
+                                     ),
+                                   ),
+                                 ),
+                               ),
+                               title: Text(
+                                 formatTit(d.data![index]['title']),
+                                 overflow: TextOverflow.ellipsis,
+                                 style: CustomTextStyle(
+                                     color: Colors.white
+                                 ),),
+                               subtitle: Text(
+                                 formatTit(d.data![index]['more_info']['singers']),
+                                 overflow: TextOverflow.ellipsis,
+                                 style: CustomTextStyle(
+                                     fontWeight: FontWeight.w300,
+                                     fontSize: 14.sp,
+                                     color: Colors.grey
+                                 ),),
+                               trailing: Text(
+                                 d.data![index]['duration']
+                                     .toString(),
+                                 overflow: TextOverflow.ellipsis,
+                                 style: CustomTextStyle(
+                                     fontWeight: FontWeight.w300,
+                                     fontSize: 14.sp,
+                                     color: Colors.grey
+                                 ),),
+                               onTap: (){
+                                 context.read<MusicProvider>().dispSong =
+                                 d.data![index];
+                                 context.read<MusicProvider>().loading = true;
+                                 context.read<MusicProvider>().
+                                 inSession = false;
+                                 Get.to(()=>const SongDisplay());
+                               },
+                             )
 
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 5, bottom: 5),
-                      child: ListTile(
-                        leading: CachedNetworkImage(
-                          width: 60,
-                          height: 60,
-                          imageUrl: d.data![index]['lowResImage'].toString(),
-                          imageBuilder: (context, imageProvider) => DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              image: DecorationImage(
-                                image: imageProvider,
-                                centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
-                              ),
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          d.data![index]['title']
-                              .toString()
-                              .split('(')[0]
-                              .replaceAll('&quot;', '"')
-                              .replaceAll('&amp;', '&'),
-                          overflow: TextOverflow.ellipsis,
-                          style: CustomTextStyle(
-                          color: Colors.white
-                        ),),
-                        subtitle: Text(
-                          d.data![index]['more_info']['singers']
-                              .toString()
-                              .split('(')[0]
-                              .replaceAll('&quot;', '"')
-                              .replaceAll('&amp;', '&'),
-                          overflow: TextOverflow.ellipsis,
-                          style: CustomTextStyle(
-                            fontWeight: FontWeight.w300,
-                              fontSize: 14.sp,
-                              color: Colors.grey
-                          ),),
-                        trailing: Text(
-                          d.data![index]['duration']
-                              .toString(),
-                          overflow: TextOverflow.ellipsis,
-                          style: CustomTextStyle(
-                              fontWeight: FontWeight.w300,
-                              fontSize: 14.sp,
-                              color: Colors.grey
-                          ),),
-                        onTap: (){
-                          context.read<MusicProvider>().loading = true;
-                          Get.to(SongDisplay(song: d.data![index],));
-                        },
-                      )
-
-                    );
-                  },
-                )
-                    : const SizedBox();
+                         );
+                       },
+                     );
+                   }
+               else {
+               return Column(
+                 children: [
+                   SizedBox(height: 200.h,),
+                   const CircularProgressIndicator.adaptive(),
+                 ],
+               );
+               }
               },
             )
             // Expanded(

@@ -4,10 +4,15 @@ import 'package:dag/nav%20screens/home.dart';
 import 'package:dag/nav%20screens/mymusic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 import '../../nav screens/me.dart';
 import '../../nav screens/search/presentation/search_music.dart';
+import '../../provider/color.dart';
 import '../../utils/custom_textstyles.dart';
+
+
+final GlobalKey homeKey = GlobalKey();
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -27,20 +32,23 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
+      key: homeKey,
       backgroundColor: Colors.black,
       body: screens[pressedButtonNo],
-      bottomNavigationBar: CurvedNavigationBar(
-        iconPadding: 7,
-        color: Theme.of(context).primaryColor,
+      bottomNavigationBar:
+
+      CurvedNavigationBar(
+        iconPadding: 15.w,
+        color: context.read<ColorProvider>().blackAcc,
         backgroundColor: Colors.black,
         animationDuration: const Duration(milliseconds: 200),
-        height: 60.h,
+        height: 50.h,
         index: pressedButtonNo,
         items:   <CurvedNavigationBarItem>[
           curvdNav(0,"Home",Icons.home,Icons.home_outlined),
-          curvdNav(1,"Home",Icons.search,Icons.search_outlined),
-          curvdNav(2,"My Account",Icons.music_note,Icons.music_note_outlined),
-          curvdNav(3,"Account",Icons.person,Icons.person_outline),
+          curvdNav(1,"Search",Icons.search,Icons.search_outlined),
+          curvdNav(2,"All Music",Icons.music_note,Icons.music_note_outlined),
+          curvdNav(3,"Me",Icons.person,Icons.person_outline),
         ],
         onTap: (index){
           setState(() {
@@ -60,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return CurvedNavigationBarItem(
           labelStyle: CustomTextStyle(
               color: (pressedButtonNo == ind)?
-              Colors.white:
+              context.read<ColorProvider>().primaryCol:
               Colors.grey,
             fontSize: 13.sp,
             fontWeight: FontWeight.w300
@@ -70,9 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
               pressedButtonNo == ind ?
               selected:
               Unselected,
-              size:  pressedButtonNo == ind ? 16.sp: 28.sp
+              size:  pressedButtonNo == ind ? 25.sp: 28.sp
               ,color: (pressedButtonNo == ind)?
-         Colors.white:
+          context.read<ColorProvider>().primaryCol:
           Colors.grey,
         ),);
   }

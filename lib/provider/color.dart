@@ -2,10 +2,10 @@
 import 'package:flutter/material.dart';
 
 class ColorProvider extends ChangeNotifier{
-  Color _origOrange = Colors.deepOrange;
-  Color get origOrange => _origOrange;
-  set origOrange (Color val){
-    _origOrange = val;
+  Color _primaryCol = Color(0xff85BE00);
+  Color get primaryCol => _primaryCol;
+  set primaryCol (Color val){
+    _primaryCol = val;
     notifyListeners();
   }
 
@@ -28,10 +28,10 @@ class ColorProvider extends ChangeNotifier{
     notifyListeners();
   }
 
-  Color _origLightAsh = Color(0x38a29cff);
-  Color get origLightAsh => _origLightAsh;
-  set origLightAsh (Color val){
-    _origLightAsh = val;
+  Color _blackAcc = Color(0xFC2D2D2D);
+  Color get blackAcc => _blackAcc;
+  set blackAcc (Color val){
+    _blackAcc = val;
     notifyListeners();
   }
   bool _modeStat = true;

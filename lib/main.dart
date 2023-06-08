@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
         designSize: const Size(360, 640),
         minTextAdapt: true,
           builder: (context, child) => GetMaterialApp(
+
             debugShowCheckedModeBanner: false,
             color: Colors.black,
               title: 'Dag',
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
               color: Colors.white
                 ) ,
                 fontFamily: 'Poppins',
-                colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+                colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff85BE00)),
                 useMaterial3: true,
               ),
               home: HomeScreen()

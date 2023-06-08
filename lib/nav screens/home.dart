@@ -1,11 +1,14 @@
 import 'package:dag/music/presentation/homescreen.dart';
+import 'package:dag/music/presentation/song_widget.dart';
 import 'package:dag/nav%20screens/search/presentation/search_music.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:provider/provider.dart';
 
+import '../provider/music.dart';
 import '../utils/custom_textstyles.dart';
 
 class Home extends StatefulWidget {
@@ -38,6 +41,10 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
+      persistentFooterButtons: [
+        if(context.read<MusicProvider>().inSession)
+          const SongWidget(),
+      ],
       body: Padding(
         padding:  EdgeInsets.symmetric(horizontal: 15.w),
         child: SingleChildScrollView(

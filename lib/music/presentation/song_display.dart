@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dag/provider/color.dart';
@@ -16,45 +17,27 @@ import '../../nav screens/search/presentation/search_music.dart';
 import '../../provider/music.dart';
 import '../../utils/functions.dart';
 class SongDisplay extends StatefulWidget {
-  final Map<String,dynamic> song;
-   const SongDisplay({Key? key, required
-   this.song}) : super(key: key);
+   const SongDisplay({Key? key}) : super(key: key);
   @override
   State<SongDisplay> createState() => _SongDisplayState();
 }
 final player = AudioPlayer();
+StreamSubscription? positStream;
 class _SongDisplayState extends State<SongDisplay> {
 
-StreamSubscription? positStream;
-void loadM()async{
-  final manifest = await yt.
-  videos.streamsClient.
-  getManifest(widget.song["ytid"]);
-  final duration = await player.setUrl(
-      manifest.audioOnly.withHighestBitrate().url.toString());
-  context.read<MusicProvider>().endV =
-      formatDur(duration!);
-  int tot = calcTotDur(duration);
-  context.read<MusicProvider>().play = true;
-  context.read<MusicProvider>().loading = false;
-  player.play();
-  positStream = player.positionStream.listen((v) {
-    context.read<MusicProvider>().startV = formatDur(v);
-    int cur = calcTotDur(v);
-    context.read<MusicProvider>().sV = cur/tot;
-  });
-}
 @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    loadM();
+    mounted && !context.read<MusicProvider>().
+  inSession ? loadM(context, context.read<MusicProvider>().
+    dispSong) :{};
   }
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    positStream?.cancel();
+    //positStream?.cancel();
   }
   @override
   Widget build(BuildContext context) {
@@ -71,6 +54,11 @@ void loadM()async{
                 icon: Icon(Icons.keyboard_arrow_left,
                 color: color.origWhite,),
               ),
+              centerTitle: true,
+              title:  Text('Music',style: CustomTextStyle(
+                  color: color.origWhite,
+                  fontSize: 18.sp
+              ),),
               backgroundColor: color.scaffoldCol,
               actions: [
                 IconButton(onPressed: (){}, icon:
@@ -81,18 +69,14 @@ void loadM()async{
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                Text('Now playing',style: CustomTextStyle(
-                  color: color.origWhite,
-                  fontSize: 18.sp
-                ),),
-                Flexible(child: SizedBox(height: 20.h,)),
+                SizedBox(height: 20.h,),
                 CachedNetworkImage(
                   width: 250.w,
                   height: 300.h,
-                  imageUrl: widget.song['image'].toString(),
+                  imageUrl: music.dispSong['image'].toString(),
                   errorWidget: (context, url, error)=>Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: color.origLightAsh),
+                        border: Border.all(color: color.blackAcc),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Image.asset('images/mus_pla.jpg')),
@@ -106,64 +90,85 @@ void loadM()async{
                     ),
                   ),
                 ),
-                 // Flexible(child: SizedBox(height: 50.h)),
                   Padding(
                     padding:EdgeInsets.symmetric(horizontal: 15.w),
-                    child: Text(widget.song['title'],
+                    child: Text(music.dispSong['title'],
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                       style: CustomTextStyle(
                       color: color.origWhite,
                       fontSize: 22.sp,
                       fontWeight: FontWeight.w600
                     ),),
                   ),
-                  Text(
-                    
-                    widget.song['more_info']['singers']
-                        .toString()
-                        .split('(')[0]
-                        .replaceAll('&quot;', '"')
-                        .replaceAll('&amp;', '&'),
-                    overflow: TextOverflow.ellipsis,
-                    style: CustomTextStyle(
-                      color: Colors.grey,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w300
-                  ),),
+                  Padding(
+                    padding:EdgeInsets.symmetric(horizontal: 15.w),
+                    child: Text(
+                      formatTit(music.dispSong['more_info']['singers']),
+                      overflow: TextOverflow.ellipsis,
+                      style: CustomTextStyle(
+                        color: Colors.grey,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w300
+                    ),),
+                  ),
                   Flexible(child: SizedBox(height: 20.h,)),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Slider(
-                        activeColor: color.origOrange,
-                          inactiveColor: Colors.grey,
-                          secondaryActiveColor: Colors.yellow,
-                          value: music.sV,
-                          onChanged: (v){
-
-                            music.sV = v;
-
-                      }),
+                      // Slider(
+                      //   activeColor: color.primaryCol,
+                      //     inactiveColor: Colors.grey,
+                      //     secondaryActiveColor: Colors.yellow,
+                      //     value: music.sV,
+                      //     onChanged: (v){
+                      //       music.sV = v;
+                      // }),
                       Padding(
-                        padding:  EdgeInsets.symmetric(
-                          horizontal: 22.w
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(music.startV,style: CustomTextStyle(
-                              color: color.origWhite
-                            ),),
-                            Text(music.endV,style: CustomTextStyle(
-                                color: Colors.grey
-                            ),),
-                          ],
+                        padding:EdgeInsets.symmetric(horizontal: 15.w),
+                        child: ProgressBar(
+                          progress: music.sV,
+                          buffered: music.bV,
+                          total: music.endV,
+                          progressBarColor: color.primaryCol,
+                          baseBarColor: Colors.grey.withOpacity(0.24),
+                          bufferedBarColor: Colors.grey,
+                          thumbColor: Colors.white,
+                          barHeight: 6.0.h,
+                          timeLabelTextStyle: CustomTextStyle(
+                            fontSize: 14.sp,
+                            color: Colors.grey
+                          ),
+                          thumbRadius: 11.0.r,
+                          onSeek: (duration) {
+                            player.seek(duration);
+                          },
                         ),
                       ),
+                      // Padding(
+                      //   padding:  EdgeInsets.symmetric(
+                      //     horizontal: 22.w
+                      //   ),
+                      //   child: Row(
+                      //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //     children: [
+                      //       Text(music.startV,style: CustomTextStyle(
+                      //         color: color.origWhite,fontSize: 14.sp
+                      //       ),),
+                      //       Text(music.endV,style: CustomTextStyle(
+                      //           color: Colors.grey, fontSize: 14.sp
+                      //       ),),
+                      //     ],
+                      //   ),
+                      // ),
 
                       Row(
+
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          IconButton(onPressed: (){}, icon:
+                          IconButton(onPressed: (){
+                            player.setLoopMode(LoopMode.one);
+                          }, icon:
                           Icon(Icons.repeat_one_sharp,)),
                           Row(
                             children: [
@@ -181,8 +186,8 @@ void loadM()async{
                                 showTwoGlows: true,
                                 repeatPauseDuration: Duration(milliseconds: 100),
                                 child: CircleAvatar(
-                                  backgroundColor: Colors.grey[100],
-                                  radius: 14.r,
+                                  backgroundColor: color.primaryCol,
+                                  radius: 18.r,
                                   child: InkWell(
                                       onTap:()async{
                                           music.play = !music.play;
@@ -192,14 +197,14 @@ void loadM()async{
                                           else{
                                             player.play();}
                                         },
-                                      child: music.play ? Icon(Icons.pause,
+                                      child: music.play  ? Icon(Icons.pause,
                                       color: color.scaffoldCol,) :
                                       Icon(Icons.play_arrow,
                                         color: color.scaffoldCol,),
                                 ),)
                               ),
                               IconButton(onPressed: (){}, icon:
-                              Icon(Icons.skip_previous,)),
+                              Icon(Icons.skip_next,)),
                             ],
                           ),
                           IconButton(onPressed: (){}, icon:
@@ -207,7 +212,8 @@ void loadM()async{
                         ],
                       ),
                     ],
-                  )
+                  ),
+                  Flexible(child: SizedBox(height: 5.h,)),
               ],),
             ),
             // bottomSheet: Container(

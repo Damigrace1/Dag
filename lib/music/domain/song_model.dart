@@ -5,11 +5,16 @@ class SongModel {
   final String? id;
   final String? title;
   final String? image;
-
+  final String? imgUrl;
+  final Duration? dur;
+  final String? artistes;
   SongModel({
+    this.artistes,
      this.id,
+     this.dur,
      this.title,
      this.image,
+     this.imgUrl
   });
 
 }

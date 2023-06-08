@@ -43,6 +43,7 @@ dependencies:
   cached_network_image:
   avatar_glow:
   just_audio:
+  audio_video_progress_bar:
 
 dev_dependencies:
   flutter_test:
