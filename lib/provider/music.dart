@@ -29,12 +29,12 @@ class MusicProvider  extends ChangeNotifier{
     notifyListeners();
   }
 
-  SongModel? _song;
-  SongModel? get song => _song;
-  set song (SongModel? v){
-    _song = v;
-    notifyListeners();
-  }
+  // SongModel? _song;
+  // SongModel? get song => _song;
+  // set song (SongModel? v){
+  //   _song = v;
+  //   notifyListeners();
+  // }
 
   Duration _sV = const Duration();
   Duration get sV => _sV;
@@ -56,10 +56,29 @@ class MusicProvider  extends ChangeNotifier{
     _inSession = val;
     notifyListeners();
   }
+  bool _isPlaying = false;
+  bool get isPlaying => _isPlaying;
+  set isPlaying (bool val){
+    _isPlaying = val;
+    notifyListeners();
+  }
   Duration _bV = const Duration();
   Duration get bV => _bV;
   set bV (Duration v){
     _bV = v;
+    notifyListeners();
+  }
+  String _songUrl = '';
+  String get songUrl => _songUrl;
+  set songUrl (String v){
+    _songUrl = v;
+    notifyListeners();
+  }
+
+  double _dlVal = 0;
+  double get dlVal => _dlVal;
+  set dlVal (double val){
+    _dlVal = val;
     notifyListeners();
   }
 }

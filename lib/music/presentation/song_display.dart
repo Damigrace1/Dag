@@ -1,15 +1,22 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dag/main.dart';
+import 'package:dag/music/data/hive_store.dart';
+import 'package:dag/music/domain/song_model.dart';
 import 'package:dag/provider/color.dart';
 import 'package:dag/utils/custom_textstyles.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -23,6 +30,7 @@ class SongDisplay extends StatefulWidget {
 }
 final player = AudioPlayer();
 StreamSubscription? positStream;
+StreamSubscription? bufStream;
 class _SongDisplayState extends State<SongDisplay> {
 
 @override
@@ -30,8 +38,8 @@ class _SongDisplayState extends State<SongDisplay> {
     // TODO: implement initState
     super.initState();
     mounted && !context.read<MusicProvider>().
-  inSession ? loadM(context, context.read<MusicProvider>().
-    dispSong) :{};
+  inSession ? Future.delayed(Duration.zero,(){loadM(
+        context, context.read<MusicProvider>().dispSong);}) :{};
   }
   @override
   void dispose() {
@@ -61,8 +69,23 @@ class _SongDisplayState extends State<SongDisplay> {
               ),),
               backgroundColor: color.scaffoldCol,
               actions: [
-                IconButton(onPressed: (){}, icon:
-                Icon(Icons.more_vert,color:color.origWhite,))
+                IconButton(onPressed: (){
+                  print(favBox!.length);
+                }, icon:
+                Icon(Icons.more_vert,color:color.origWhite,)),
+                IconButton(onPressed: (){
+                 // favBox!.add('id' , music.song?.id);
+                  var fav = Favourite()
+                      ..id = music.dispSong['ytid']
+                      ..songUrl = music.songUrl
+                      ..title = music.dispSong['title']
+                      ..imgUrl = music.dispSong['image']
+                      ..artiste = music.dispSong['authur'];
+                  favBox?.put(music.dispSong['ytid'],fav);
+                  showToast(context, 'Music added to Favourites');
+
+                }, icon:
+                Icon(Icons.playlist_add,color:color.origWhite,))
               ],
             ),
             body: Center(
@@ -73,7 +96,7 @@ class _SongDisplayState extends State<SongDisplay> {
                 CachedNetworkImage(
                   width: 250.w,
                   height: 300.h,
-                  imageUrl: music.dispSong['image'].toString(),
+                  imageUrl: music.dispSong['image'],
                   errorWidget: (context, url, error)=>Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: color.blackAcc),
@@ -97,14 +120,14 @@ class _SongDisplayState extends State<SongDisplay> {
                       overflow: TextOverflow.ellipsis,
                       style: CustomTextStyle(
                       color: color.origWhite,
-                      fontSize: 22.sp,
+                      fontSize: 19.sp,
                       fontWeight: FontWeight.w600
                     ),),
                   ),
                   Padding(
                     padding:EdgeInsets.symmetric(horizontal: 15.w),
                     child: Text(
-                      formatTit(music.dispSong['more_info']['singers']),
+                      formatTit(music.dispSong['authur']),
                       overflow: TextOverflow.ellipsis,
                       style: CustomTextStyle(
                         color: Colors.grey,
@@ -207,7 +230,18 @@ class _SongDisplayState extends State<SongDisplay> {
                               Icon(Icons.skip_next,)),
                             ],
                           ),
-                          IconButton(onPressed: (){}, icon:
+                          IconButton(onPressed: (){
+                            music.dlVal == 0 ?{
+                            downloadSong(),
+                              showPersistentSnackbar(context, 'message'),
+                            }
+                                :
+                            {
+
+                              showToast(context,
+                              'Download already in progress')
+                            };
+                          }, icon:
                           Icon(Icons.download)),
                         ],
                       ),

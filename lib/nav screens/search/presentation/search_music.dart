@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dag/music/domain/song_model.dart';
 import 'package:dag/music/presentation/song_display.dart';
+import 'package:dag/provider/color.dart';
 import 'package:dag/utils/custom_textstyles.dart';
 import 'package:dag/utils/search.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,8 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
+import '../../../main.dart';
+import '../../../music/data/hive_store.dart';
 import '../../../provider/music.dart';
 import '../../../utils/functions.dart';
 class SearchScreen extends StatefulWidget {
@@ -22,18 +25,7 @@ final yt = YoutubeExplode();
 class _SearchScreenState extends State<SearchScreen> {
   // List<Map<String, dynamic>>? songs;
   String? sT = '';
-  Future<List> fetchSongsList(String searchQuery) async {
-    final VideoSearchList list = await yt.search.search(searchQuery);
-    final searchedList = [
-      for (final s in list)
-        returnSongLayout(
-          0,
-          s,
-        )
-    ];
-
-    return searchedList;
-  }
+  bool reload = false;
   @override
   Widget build(BuildContext context) {
 
@@ -53,18 +45,20 @@ class _SearchScreenState extends State<SearchScreen> {
         //   l.title)
         //   );
         // }
-        setState(() {
-            sT = val;
-        });
+             setState(() {
+               sT =val;
+             });
              //print(list[0]);
             },),
           ),
+
             FutureBuilder(
               future: fetchSongsList(sT!),
               builder: (context, d) {
                if (d.connectionState == ConnectionState.done)
                    {
-                     return ListView.builder(
+                     return d.data != null ?
+                       ListView.builder(
                        shrinkWrap: true,
                        addAutomaticKeepAlives: false,
                        addRepaintBoundaries: false,
@@ -76,9 +70,10 @@ class _SearchScreenState extends State<SearchScreen> {
                              padding: const EdgeInsets.only(top: 5, bottom: 5),
                              child: ListTile(
                                leading: CachedNetworkImage(
-                                 width: 60,
-                                 height: 60,
-                                 imageUrl: d.data![index]['lowResImage'].toString(),
+                                 width: 60.w,
+                                 height: 60.h,
+                                 imageUrl:
+                                 d.data![index]['lowResImage'].toString(),
                                  imageBuilder: (context, imageProvider) => DecoratedBox(
                                    decoration: BoxDecoration(
                                      borderRadius: BorderRadius.circular(12),
@@ -96,22 +91,45 @@ class _SearchScreenState extends State<SearchScreen> {
                                      color: Colors.white
                                  ),),
                                subtitle: Text(
-                                 formatTit(d.data![index]['more_info']['singers']),
+                                 formatTit(d.data![index]['authur']),
                                  overflow: TextOverflow.ellipsis,
                                  style: CustomTextStyle(
                                      fontWeight: FontWeight.w300,
                                      fontSize: 14.sp,
                                      color: Colors.grey
                                  ),),
-                               trailing: Text(
-                                 d.data![index]['duration']
-                                     .toString(),
-                                 overflow: TextOverflow.ellipsis,
-                                 style: CustomTextStyle(
-                                     fontWeight: FontWeight.w300,
-                                     fontSize: 14.sp,
-                                     color: Colors.grey
-                                 ),),
+                               trailing: Row(
+                                 mainAxisSize: MainAxisSize.min,
+                                 children: [
+                                   IconButton(onPressed: ()async{
+                                     final manifest = await yt.
+                                     videos.streamsClient.
+                                     getManifest(d.data![index]["ytid"]);
+                                     var fav = Favourite()
+                                       ..id = d.data![index]['ytid']
+                                       ..songUrl = manifest.audioOnly.withHighestBitrate().
+                                       url.toString()
+                                       ..title = formatTit(d.data![index]['title'])
+                                       ..imgUrl = d.data![index]['image']
+                                       ..artiste = d.data![index]['authur'];
+                                     favBox?.put(d.data![index]["ytid"],fav);
+                                     showToast(context, 'Music added to Favourites');
+                                   }, icon:
+                                   Icon(Icons.playlist_add,
+                                     size: 25.sp,
+                                     color:
+                                   context.read<ColorProvider>().origWhite,)),
+                                   // Text(
+                                   //   d.data![index]['duration']
+                                   //       .toString(),
+                                   //   overflow: TextOverflow.ellipsis,
+                                   //   style: CustomTextStyle(
+                                   //       fontWeight: FontWeight.w300,
+                                   //       fontSize: 14.sp,
+                                   //       color: Colors.grey
+                                   //   ),),
+                                 ],
+                               ),
                                onTap: (){
                                  context.read<MusicProvider>().dispSong =
                                  d.data![index];
@@ -124,6 +142,15 @@ class _SearchScreenState extends State<SearchScreen> {
 
                          );
                        },
+                     )
+                     :Column(
+                       children: [
+                         SizedBox(height: 200.h,),
+                          Center(child:
+                           Text('No results found! 😔',style: CustomTextStyle(
+                             color: Colors.grey
+                           ),),),
+                       ],
                      );
                    }
                else {

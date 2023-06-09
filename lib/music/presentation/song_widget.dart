@@ -11,6 +11,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:provider/provider.dart';
 
 import '../../utils/custom_textstyles.dart';
+import '../domain/song_model.dart';
 class SongWidget extends StatelessWidget {
   const SongWidget({Key? key}) : super(key: key);
 
@@ -27,7 +28,13 @@ class SongWidget extends StatelessWidget {
                 leading: CachedNetworkImage(
                   width: 50.w,
                   height: 50.h,
-                  imageUrl: music.song!.imgUrl!,
+                  imageUrl:  music.dispSong['image'],
+                  errorWidget: (context, url, error)=>Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: color.blackAcc),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Image.asset('images/mus_pla.jpg')),
                   imageBuilder: (context, imageProvider) => DecoratedBox(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
@@ -39,13 +46,13 @@ class SongWidget extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  music.song!.title!,
+                  music.dispSong['title'],
                   overflow: TextOverflow.ellipsis,
                   style: CustomTextStyle(
                       color: Colors.white
                   ),),
                 subtitle: Text(
-                  music.song!.artistes!,
+                  music.dispSong['authur'],
                   overflow: TextOverflow.ellipsis,
                   style: CustomTextStyle(
                       fontWeight: FontWeight.w300,

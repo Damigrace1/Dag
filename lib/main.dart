@@ -4,9 +4,24 @@ import 'package:dag/provider/registry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+import 'music/data/hive_store.dart';
+
+Box? favBox;
+Future<void> main()async {
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
+    androidNotificationChannelName: 'Audio playback',
+    androidNotificationOngoing: true,
+  );
+  await Hive.initFlutter();
+  // Open the peopleBox
+  Hive.registerAdapter(FavouriteAdapter());
+ favBox = await Hive.openBox('favBox');
   runApp(const MyApp());
 }
 

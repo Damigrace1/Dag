@@ -48,12 +48,13 @@ String d = formatDur(song.duration!);
     'ytid': song.id.toString(),
     'title': formatSongTitle(
       song.title.split('-')[song.title.split('-').length - 1],
-    ),
-    'image': song.thumbnails.standardResUrl,
-    'lowResImage': song.thumbnails.lowResUrl,
+    )??'',
+    'image': song.thumbnails.standardResUrl??'',
+    'lowResImage': song.thumbnails.lowResUrl??'',
     'highResImage': song.thumbnails.maxResUrl,
     'album': '',
     'type': 'song',
+    'authur':song.author??'',
     'more_info': {
       'primary_artists': song.title.split('-')[0],
       'singers': song.title.split('-')[0],
