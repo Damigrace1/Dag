@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 items:   <CurvedNavigationBarItem>[
                   curvdNav(0,"Home",Icons.home,Icons.home_outlined),
                   curvdNav(1,"Search",Icons.search,Icons.search_outlined),
-                  curvdNav(2,"All Music",Icons.music_note,Icons.music_note_outlined),
+                  curvdNav(2,"Favourites",Icons.music_note,Icons.music_note_outlined),
                   curvdNav(3,"Me",Icons.person,Icons.person_outline),
                 ],
                 onTap: (index){

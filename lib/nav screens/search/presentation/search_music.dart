@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dag/music/domain/song_model.dart';
 import 'package:dag/music/presentation/song_display.dart';
@@ -9,6 +11,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../../../main.dart';
@@ -26,6 +29,15 @@ class _SearchScreenState extends State<SearchScreen> {
   // List<Map<String, dynamic>>? songs;
   String? sT = '';
   bool reload = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+
+     stt.initialize();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -105,14 +117,18 @@ class _SearchScreenState extends State<SearchScreen> {
                                      final manifest = await yt.
                                      videos.streamsClient.
                                      getManifest(d.data![index]["ytid"]);
-                                     var fav = Favourite()
+                                     Favourite fav = Favourite()
                                        ..id = d.data![index]['ytid']
                                        ..songUrl = manifest.audioOnly.withHighestBitrate().
                                        url.toString()
                                        ..title = formatTit(d.data![index]['title'])
                                        ..imgUrl = d.data![index]['image']
-                                       ..artiste = d.data![index]['authur'];
+                                       ..artiste = d.data![index]['authur']
+                                     ..duration = d.data![index]['duration']??const Duration(seconds: 25);
                                      favBox?.put(d.data![index]["ytid"],fav);
+                                     print("retrieved string: ${
+                                         favBox?.get(d.data![index]["ytid"]).duration
+                                     }");
                                      showToast(context, 'Music added to Favourites');
                                    }, icon:
                                    Icon(Icons.playlist_add,
@@ -131,8 +147,11 @@ class _SearchScreenState extends State<SearchScreen> {
                                  ],
                                ),
                                onTap: (){
+                                 //player.stop();
+                                 context.read<MusicProvider>().singleT = true;
                                  context.read<MusicProvider>().dispSong =
                                  d.data![index];
+
                                  context.read<MusicProvider>().loading = true;
                                  context.read<MusicProvider>().
                                  inSession = false;

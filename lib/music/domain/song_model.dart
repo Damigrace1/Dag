@@ -41,9 +41,10 @@ String formatSongTitle(String title) {
 }
 Map<String, dynamic> returnSongLayout(dynamic index, Video song) {
 String d = formatDur(song.duration!);
+print(song.duration);
   return {
 
-  'duration': d,
+  'duration': song.duration,
     'id': index,
     'ytid': song.id.toString(),
     'title': formatSongTitle(

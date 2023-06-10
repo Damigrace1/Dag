@@ -96,7 +96,7 @@ class _SongDisplayState extends State<SongDisplay> {
                 CachedNetworkImage(
                   width: 250.w,
                   height: 300.h,
-                  imageUrl: music.dispSong['image'],
+                  imageUrl: music.dispSong['image']??'',
                   errorWidget: (context, url, error)=>Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: color.blackAcc),
@@ -163,8 +163,10 @@ class _SongDisplayState extends State<SongDisplay> {
                             color: Colors.grey
                           ),
                           thumbRadius: 11.0.r,
-                          onSeek: (duration) {
-                            player.seek(duration);
+                          onSeek: (duration)async {
+                            music.loading = true;
+                       await  player.seek(duration);
+                       music.loading = false;
                           },
                         ),
                       ),
@@ -195,8 +197,15 @@ class _SongDisplayState extends State<SongDisplay> {
                           Icon(Icons.repeat_one_sharp,)),
                           Row(
                             children: [
-                              IconButton(onPressed: (){}, icon:
-                              Icon(Icons.skip_previous,)),
+                              player.hasPrevious?
+                              IconButton(onPressed: ()async{
+                                music.loading = true;
+                                await  player.seekToPrevious();
+                                music.loading = false;
+                              }, icon:
+                              Icon(Icons.skip_previous,)) :
+                              const Icon(Icons.skip_previous,
+                                color:  Colors.grey,),
                               music.loading ?
                                   const CircularProgressIndicator.
                                   adaptive() :
@@ -213,6 +222,7 @@ class _SongDisplayState extends State<SongDisplay> {
                                   radius: 18.r,
                                   child: InkWell(
                                       onTap:()async{
+
                                           music.play = !music.play;
                                           if(!music.play){
                                             player.pause();
@@ -226,8 +236,14 @@ class _SongDisplayState extends State<SongDisplay> {
                                         color: color.scaffoldCol,),
                                 ),)
                               ),
-                              IconButton(onPressed: (){}, icon:
-                              Icon(Icons.skip_next,)),
+                              player.hasNext ? IconButton(onPressed: ()async{
+                                music.loading = true;
+                                await  player.seekToNext();
+                                music.loading = false;
+                              }, icon:
+                              Icon(Icons.skip_next,)) :
+                              Icon(Icons.skip_next,color:
+                                Colors.grey,)
                             ],
                           ),
                           IconButton(onPressed: (){

@@ -1,3 +1,4 @@
+import 'package:dag/music/data/hive_store.dart';
 import 'package:dag/music/domain/song_model.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -47,6 +48,25 @@ class MusicProvider  extends ChangeNotifier{
   Map<String, dynamic> get dispSong => _dispSong;
   set dispSong(Map<String, dynamic> v){
     _dispSong = v;
+    notifyListeners();
+  }
+
+  bool _singleT = true;
+  bool get singleT => _singleT;
+  set singleT (bool val){
+    _singleT = val;
+    notifyListeners();
+  }
+  bool _rec = false;
+  bool get rec => _rec;
+  set rec (bool val){
+    _rec = val;
+    notifyListeners();
+  }
+  List<Favourite>? _songGroup;
+  List<Favourite>? get songGroup => _songGroup;
+  set songGroup (List<Favourite>? val){
+    _songGroup = val;
     notifyListeners();
   }
 

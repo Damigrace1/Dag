@@ -27,7 +27,6 @@ class _LibraryState extends State<Library> {
 
   @override
   Widget build(BuildContext context) {
-    //loadSongs();
     List<Favourite> favs = getFavSongs();
     return Consumer2<ColorProvider,MusicProvider>(
         builder: (context,color,music,child){
@@ -128,6 +127,8 @@ class _LibraryState extends State<Library> {
                       'authur':favs[index].artiste,
 
                     };
+                    context.read<MusicProvider>().singleT = false;
+                    context.read<MusicProvider>().songGroup = favs;
                     context.read<MusicProvider>().loading = true;
                     context.read<MusicProvider>().
                     inSession = false;

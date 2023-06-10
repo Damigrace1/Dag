@@ -44,48 +44,6 @@ calcTotDur( Duration dur){
   return tot;
 }
 
-void loadM(BuildContext context, Map<String, dynamic> val)async{
-  BuildContext ctx = homeKey.currentContext!;
-  // ctx.read<MusicProvider>().song = SongModel(
-  //     artistes: formatSongTitle(val['more_info']['singers']),
-  //     title: val['title'],
-  //     imgUrl: val['image'],
-  //   id: val['ytid']
-  // );
-  ctx.read<MusicProvider>().isPlaying = true;
-  final manifest = await yt.
-  videos.streamsClient.
-  getManifest(val["ytid"]);
-  final duration = await player.setAudioSource(
-     // manifest.audioOnly.withHighestBitrate().url.toString()
-    AudioSource.uri(
-      Uri.parse(manifest.audioOnly.withHighestBitrate().url.toString()),
-      tag: const MediaItem(
-        // Specify a unique ID for each media item:
-        id: '1',
-        // Metadata to display in the notification:
-        album: "Album name",
-        title: "Song name",
-        //artUri: Uri.parse(),
-      ),
-    ),
-  );
-  ctx.read<MusicProvider>().songUrl = manifest.audioOnly.withHighestBitrate().
-  url.toString();
-  ctx.read<MusicProvider>().endV = duration!;
-  ctx.read<MusicProvider>().play = true;
-  context.read<MusicProvider>().loading = false;
-  player.play();
-  ctx.read<MusicProvider>().inSession = true;
-
-  positStream = player.positionStream.listen((v) {
-    //context.read<MusicProvider>().startV = v;
-    homeKey.currentContext!.read<MusicProvider>().sV = v;
-  });
-  bufStream = player.bufferedPositionStream.listen((v) {
-    homeKey.currentContext!.read<MusicProvider>().bV = v;
-  });
-}
 
 Future<List> fetchSongsList(String searchQuery) async {
   final VideoSearchList list = await yt.search.search(searchQuery);
@@ -192,30 +150,6 @@ void showPersistentSnackbar(BuildContext context, String message) {
   ).show(context);
 }
 
-loadSongs(){
-  AudioPlayer aud = AudioPlayer();
-  //int? curQueIndex = 0;
-  ConcatenatingAudioSource audioSource = ConcatenatingAudioSource(children:[
-    AudioSource.asset('sounds/dark-engine-logo-141942.mp3'),
-    AudioSource.asset('sounds/simple-clean-logo-13775.mp3')
-  ]);
-  aud.setAudioSource(audioSource);
-  aud.play();
-
-  // aud.currentIndexStream.listen((index) {
-  //   curQueIndex = index;
-  // });
-  aud.playerStateStream.listen((state) {
-    if (state.processingState == ProcessingState.completed) {
-      aud.seekToNext();
-    }
-  });
-}
-
-getSongDetails(String id)async{
-  final song = await yt.videos.streamsClient.
-  getManifest(id);
-}
 List<Favourite> getFavSongs(){
   List? allKeys = favBox?.keys.toList();
   List<Favourite>? allFavs = [];
@@ -224,16 +158,134 @@ List<Favourite> getFavSongs(){
   });
   return allFavs;
 }
-// Future<List> fetchFavList() async {
-//   List<Favourite> favs = getFavSongs();
-//   final favList = [];
-//   favs.forEach((fav) {
-//     Map<String,dynamic> f = {
-//       'title':fav.title,
-//       'authur':fav.artiste,
-//       ''
-//     }
-//   })
+List<Favourite> favs = [];
+
+void loadM(BuildContext context, Map<String, dynamic> val)async{
+
+  BuildContext ctx = homeKey.currentContext!;
+  ctx.read<MusicProvider>().isPlaying = true;
+
+if(!ctx.read<MusicProvider>().singleT )
+ { favs  = context.read<MusicProvider>().songGroup!;}
+ Duration? duration = ctx.read<MusicProvider>().singleT ?
+     await playSingleItem(val, ctx) :
+     await playItems(
+         ctx.read<MusicProvider>().songGroup!,ctx
+     );
+
+  ctx.read<MusicProvider>().endV = duration!;
+  ctx.read<MusicProvider>().play = true;
+  ctx.read<MusicProvider>().loading = false;
+  player.play();
+  ctx.read<MusicProvider>().inSession = true;
+
+  player.positionStream.listen((v) {
+   ctx.read<MusicProvider>().sV = v;
+  });
+  bufStream = player.bufferedPositionStream.listen((v) {
+    ctx.read<MusicProvider>().bV = v;
+  });
+  player.playingStream.listen((isPlay) {
+    print('dfghjkl:$isPlay');
+    isPlay? ctx.read<MusicProvider>().loading
+    = false : true;
+  });
+  player.playerStateStream.listen((state) {
+    print('dfghjkl:$state');
+    state.processingState == ProcessingState.
+    buffering? ctx.read<MusicProvider>().loading
+    = true : false;
+  });
+  player.durationStream.listen((dur) {
+    ctx.read<MusicProvider>().endV = dur??const Duration();
+  });
+
+  if(!ctx.read<MusicProvider>().singleT) {
+
+    positStream = player.currentIndexStream.listen((index) async {
+      ctx.read<MusicProvider>().dispSong = {
+        'ytid': favs[index!].id,
+        'title': favs[index].title,
+        'image': favs[index].imgUrl,
+        'lowResImage': favs[index].imgUrl,
+        'authur': favs[index].artiste,
+      };
+    });
+  }
+  // player.playerStateStream.listen((state) async {
+  //   state.processingState == ProcessingState.completed ?
+  //       homeKey.currentContext!.read<MusicProvider>().dispSong = {
+  //         'ytid': favs[player.sequenceState!.currentIndex].id,
+  //         'title': favs[player.sequenceState!.currentIndex].title,
+  //         'image':favs[player.sequenceState!.currentIndex].imgUrl,
+  //         'lowResImage': favs[player.sequenceState!.currentIndex].imgUrl,
+  //         'authur':favs[player.sequenceState!.currentIndex].artiste,
+  //       } : {};
+  //       context.read<MusicProvider>().endV =
+  //       context.read<MusicProvider>().songGroup
+  //       ![player.sequenceState!.currentIndex].duration!;
+  //
+  // });
+}
+
+
+
+ playItems(List<Favourite> songs, BuildContext ctx)async{
+
+   List<AudioSource> aS = [];
+  for (var song in songs) {
+    AudioSource a = AudioSource.uri(
+      Uri.parse(song.songUrl!),
+      tag:  MediaItem(
+        // Specify a unique ID for each media item:
+        id: song.id!,
+        // Metadata to display in the notification:
+        album: 'Unknown',
+        title: song.title!,
+        artUri: Uri.parse(song.imgUrl!),
+      ),
+    );
+    aS.add(a);
+  }
+   AudioSource audioSource = ConcatenatingAudioSource(children:
+   <AudioSource>[...aS]);
+  Duration? dur = await player.setAudioSource(audioSource);
+  return dur;
+ }
+ playSingleItem(Map<String, dynamic> val,BuildContext ctx)async{
+   final manifest = await yt.
+   videos.streamsClient.
+   getManifest(val["ytid"]);
+   ctx.read<MusicProvider>().songUrl = manifest.audioOnly.withHighestBitrate().
+   url.toString();
+  AudioSource a = AudioSource.uri(
+    Uri.parse(ctx.read<MusicProvider>().songUrl),
+    tag:  MediaItem(
+      // Specify a unique ID for each media item:
+      id: val['ytid'],
+      // Metadata to display in the notification:
+      album: 'Unknown',
+      title: val['title'],
+      artUri: Uri.parse(val['image']),
+    ),
+  );
+   Duration? dur = await player.setAudioSource(a);
+  return dur;
+ }
+
+// playSingleItemT( Favourite f)async{
 //
-//   return searchedList;
+//   AudioSource a = AudioSource.uri(
+//     Uri.parse(f.songUrl!),
+//     tag:  MediaItem(
+//       // Specify a unique ID for each media item:
+//       id: '',
+//       // Metadata to display in the notification:
+//       album: '',
+//       title: 'test',
+//      // artUri: Uri.parse(val['image']),
+//     ),
+//   );
+//   Duration? dur = await player.setAudioSource(a);
+//   return dur;
 // }

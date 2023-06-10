@@ -1,7 +1,13 @@
+
+import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
+import '../main.dart';
+import '../provider/color.dart';
+import '../provider/music.dart';
 import 'custom_textstyles.dart';
 
 TextEditingController searchCont = TextEditingController();
@@ -50,6 +56,34 @@ class SearchB extends StatelessWidget {
                       ),
                     ),
                   ),
+                  Consumer2<ColorProvider,MusicProvider>(
+                      builder: (context,color,music,child){
+                        return
+                          AvatarGlow(
+                              glowColor: Colors.green,
+                              endRadius: 40.r,
+                              duration: Duration(milliseconds: 2000),
+                              repeat: true,
+                              animate: music.rec,
+                              showTwoGlows: true,
+                              repeatPauseDuration: Duration(milliseconds: 100),
+                              child: CircleAvatar(
+                                backgroundColor: Colors.grey,
+                                radius: 18.r,
+                                child: InkWell(
+                                  onTap:()async{
+                                    music.rec = true;
+                                    await  stt.listen(onResult: (res)=>{
+                                      print(res),
+                                      searchCont.text = res.recognizedWords
+                                    });
+                                    music.rec = false;
+                                  },
+                                  child: const Icon(Icons.mic)
+                                ),)
+                          );
+
+                      }),
                   Icon(
                     Icons.search_outlined,
                     color:  Colors.grey
@@ -61,4 +95,5 @@ class SearchB extends StatelessWidget {
       );
 
   }
+
 }

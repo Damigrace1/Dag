@@ -84,11 +84,12 @@ class _HomeState extends State<Home> {
               SizedBox(
                 height: 200.h,
                 child: FutureBuilder(
-                  future: fetchSongsList(''),
+                  future: fetchSongsList('christian songs'),
                   builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot)
                   {
                     if(snapshot.connectionState == ConnectionState.done){
-                      List suggMus = snapshot.data;
+                      List suggMus = snapshot.data??[];
+
                       return
                         ListView.builder(
                           scrollDirection: Axis.horizontal,
@@ -228,7 +229,10 @@ class _HomeState extends State<Home> {
       ) {
     return InkWell(
       onTap: (){
+        context.read<MusicProvider>().singleT = true;
+      //  player.stop();
         context.read<MusicProvider>().dispSong = song;
+
         context.read<MusicProvider>().loading = true;
         context.read<MusicProvider>().
         inSession = false;
