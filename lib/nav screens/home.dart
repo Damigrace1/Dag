@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dag/music/presentation/homescreen.dart';
 import 'package:dag/music/presentation/song_widget.dart';
 import 'package:dag/nav%20screens/search/presentation/search_music.dart';
+import 'package:dag/provider/color.dart';
 import 'package:dag/provider/home_provider.dart';
 import 'package:dag/utils/functions.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,7 +12,9 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
+import '../music/data/hive_store.dart';
 import '../music/presentation/song_display.dart';
 import '../provider/music.dart';
 import '../utils/custom_textstyles.dart';
@@ -25,6 +28,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List defaultSongs = [];
+  String searchT = 'all';
   @override
   void initState() {
     // TODO: implement initState
@@ -33,6 +37,12 @@ class _HomeState extends State<Home> {
   }
   @override
   Widget build(BuildContext context) {
+   //  yt.search.getQuerySuggestions('christian').then((value) {
+   //    print(value.audioOnly);
+   //  });
+   //  yt.videos.streamsClient.getManifest('2mfBfjTKPG8').then((value) {
+   //   print(value.audio.first);
+   // });
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -43,12 +53,15 @@ class _HomeState extends State<Home> {
             context.read<HomeProvider>().tabIndex  = 1;
           },
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert,color: Colors.white,),
-            onPressed: (){},
-          ),
-        ],
+        title: Text('Home',style: CustomTextStyle(
+          color: Colors.white,fontSize: 20.sp,fontWeight: FontWeight.bold
+        ),),
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.more_vert,color: Colors.white,),
+        //     onPressed: (){},
+        //   ),
+        // ],
       ),
       persistentFooterButtons: [
         Consumer<MusicProvider>(
@@ -75,16 +88,16 @@ class _HomeState extends State<Home> {
               ),),
               SizedBox(height: 15.h,),
               Row(children: [
-                browseText(0,'All'),
-                browseText(1,'New'),
-                browseText(2,'Popular'),
-                browseText(3,'Favourites'),
+                browseText(0,'All',"all songs"),
+                browseText(1,'New','new songs'),
+                browseText(2,'Popular', 'best songs'),
+                //browseText(3,'Favourites'),
               ],),
               SizedBox(height: 15.h,),
               SizedBox(
                 height: 200.h,
                 child: FutureBuilder(
-                  future: fetchSongsList('christian songs'),
+                  future: fetchSongsList(searchT),
                   builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot)
                   {
                     if(snapshot.connectionState == ConnectionState.done){
@@ -143,13 +156,12 @@ class _HomeState extends State<Home> {
               SizedBox(
                 height: 200.h,
                 child: FutureBuilder(
-                  future: fetchSongsList('nigeria music'),
+                  future: fetchSongsList('christian music'),
                   builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot)
                   {
                     if(snapshot.connectionState == ConnectionState.done){
-                      List suggMus = snapshot.data;
-                      return
-                        ListView.builder(
+                      List suggMus = snapshot.data??[];
+                      return ListView.builder(
                           scrollDirection: Axis.horizontal,
                           shrinkWrap: true,
                           itemCount: suggMus.length,
@@ -228,15 +240,23 @@ class _HomeState extends State<Home> {
       Map<String, dynamic> song
       ) {
     return InkWell(
-      onTap: (){
-        context.read<MusicProvider>().singleT = true;
-      //  player.stop();
-        context.read<MusicProvider>().dispSong = song;
-
+      onTap: ()async{
+        final manifest = await yt.
+        videos.streamsClient.
+        getManifest(song["ytid"]);
+        context.read<MusicProvider>().songGroup = [
+          Favourite()
+            ..id = song['ytid']
+            ..songUrl = manifest.audioOnly.withHighestBitrate().
+            url.toString()
+            ..title = formatTit(song['title'])
+            ..imgUrl = song['image']
+            ..artiste = song['authur']
+            ..duration = song['duration']??const Duration(seconds: 25)
+        ] ;
         context.read<MusicProvider>().loading = true;
         context.read<MusicProvider>().
         inSession = false;
-
         Get.to(()=>const SongDisplay());
       },
       child: Container(
@@ -252,6 +272,12 @@ class _HomeState extends State<Home> {
               height: 135.h,
               fit: BoxFit.cover,
               imageUrl: song['image'].toString(),
+              errorWidget: (context, url, error)=>Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: context.read<ColorProvider>().blackAcc),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Image.asset('images/mus_pla.jpg')),
               imageBuilder: (context, imageProvider) => DecoratedBox(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
@@ -275,12 +301,14 @@ class _HomeState extends State<Home> {
   int browseItem = 0;
   TextButton browseText(
       int ind,
-      String title
+      String title,
+      String query
       ) {
     return TextButton(
               onPressed: (){
                 setState(() {
                   browseItem = ind;
+                  searchT = query;
                 });
               },
               child: Text(title,style: CustomTextStyle(

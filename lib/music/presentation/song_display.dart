@@ -38,8 +38,8 @@ class _SongDisplayState extends State<SongDisplay> {
     // TODO: implement initState
     super.initState();
     mounted && !context.read<MusicProvider>().
-  inSession ? Future.delayed(Duration.zero,(){loadM(
-        context, context.read<MusicProvider>().dispSong);}) :{};
+  inSession ? Future.delayed(Duration.zero,(){
+    loadM();}) :{};
   }
   @override
   void dispose() {
@@ -49,7 +49,6 @@ class _SongDisplayState extends State<SongDisplay> {
   }
   @override
   Widget build(BuildContext context) {
-
     return Consumer2<ColorProvider,MusicProvider>(
         builder: (context,color,music,child){
           return Scaffold(
@@ -62,30 +61,32 @@ class _SongDisplayState extends State<SongDisplay> {
                 icon: Icon(Icons.keyboard_arrow_left,
                 color: color.origWhite,),
               ),
-              centerTitle: true,
               title:  Text('Music',style: CustomTextStyle(
                   color: color.origWhite,
                   fontSize: 18.sp
               ),),
               backgroundColor: color.scaffoldCol,
               actions: [
-                IconButton(onPressed: (){
-                  print(favBox!.length);
-                }, icon:
-                Icon(Icons.more_vert,color:color.origWhite,)),
+
                 IconButton(onPressed: (){
                  // favBox!.add('id' , music.song?.id);
                   var fav = Favourite()
-                      ..id = music.dispSong['ytid']
-                      ..songUrl = music.songUrl
-                      ..title = music.dispSong['title']
-                      ..imgUrl = music.dispSong['image']
-                      ..artiste = music.dispSong['authur'];
-                  favBox?.put(music.dispSong['ytid'],fav);
+                      ..id = music.songGroup
+                      ![music.songIndex].id!
+                      ..songUrl =music.songGroup!
+                      [music.songIndex].songUrl!
+                      ..title = music.songGroup!
+                      [music.songIndex].title!
+                      ..imgUrl =music.songGroup![
+                        music.songIndex].imgUrl!
+                      ..artiste = music.songGroup!
+                      [music.songIndex].artiste!;
+                  favBox?.put(music.songGroup![
+                    music.songIndex].id!,fav);
                   showToast(context, 'Music added to Favourites');
 
                 }, icon:
-                Icon(Icons.playlist_add,color:color.origWhite,))
+                Icon(Icons.favorite_border,color:color.origWhite,))
               ],
             ),
             body: Center(
@@ -96,7 +97,8 @@ class _SongDisplayState extends State<SongDisplay> {
                 CachedNetworkImage(
                   width: 250.w,
                   height: 300.h,
-                  imageUrl: music.dispSong['image']??'',
+                  imageUrl: music.songGroup![music
+                      .songIndex].imgUrl!??'',
                   errorWidget: (context, url, error)=>Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: color.blackAcc),
@@ -115,7 +117,8 @@ class _SongDisplayState extends State<SongDisplay> {
                 ),
                   Padding(
                     padding:EdgeInsets.symmetric(horizontal: 15.w),
-                    child: Text(music.dispSong['title'],
+                    child: Text(music.songGroup![
+                      music.songIndex].title!,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: CustomTextStyle(
@@ -127,7 +130,8 @@ class _SongDisplayState extends State<SongDisplay> {
                   Padding(
                     padding:EdgeInsets.symmetric(horizontal: 15.w),
                     child: Text(
-                      formatTit(music.dispSong['authur']),
+                      music.songGroup![music.
+                      songIndex].artiste!,
                       overflow: TextOverflow.ellipsis,
                       style: CustomTextStyle(
                         color: Colors.grey,
@@ -170,53 +174,55 @@ class _SongDisplayState extends State<SongDisplay> {
                           },
                         ),
                       ),
-                      // Padding(
-                      //   padding:  EdgeInsets.symmetric(
-                      //     horizontal: 22.w
-                      //   ),
-                      //   child: Row(
-                      //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //     children: [
-                      //       Text(music.startV,style: CustomTextStyle(
-                      //         color: color.origWhite,fontSize: 14.sp
-                      //       ),),
-                      //       Text(music.endV,style: CustomTextStyle(
-                      //           color: Colors.grey, fontSize: 14.sp
-                      //       ),),
-                      //     ],
-                      //   ),
-                      // ),
 
                       Row(
 
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           IconButton(onPressed: (){
-                            player.setLoopMode(LoopMode.one);
+                            if(music.loopMode == 0) {
+                              player.setLoopMode(LoopMode.one);
+                              music.loopMode = 1;
+                              setState(() {});
+                            }
+
+                            else{
+                              music.loopMode = 0;
+                              player.setLoopMode(LoopMode.all);
+                              setState(() {});
+                            }
                           }, icon:
-                          Icon(Icons.repeat_one_sharp,)),
+                          music.loopMode == 0 ?
+                          const Icon(Icons.repeat_one_sharp,) :
+                              const Icon(Icons.repeat,)
+                          ),
                           Row(
                             children: [
                               player.hasPrevious?
-                              IconButton(onPressed: ()async{
+                              IconButton(
+
+                                  onPressed: ()async{
                                 music.loading = true;
                                 await  player.seekToPrevious();
                                 music.loading = false;
                               }, icon:
                               Icon(Icons.skip_previous,)) :
-                              const Icon(Icons.skip_previous,
-                                color:  Colors.grey,),
+                              const IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.skip_previous,
+                                  color:  Colors.grey,),
+                              ),
                               music.loading ?
                                   const CircularProgressIndicator.
                                   adaptive() :
                               AvatarGlow(
-                                glowColor: Colors.blue,
+                                glowColor: color.primaryCol,
                                 endRadius: 32.r,
                                 duration: Duration(milliseconds: 2000),
                                 repeat: true,
                                 animate: !music.play,
                                 showTwoGlows: true,
-                                repeatPauseDuration: Duration(milliseconds: 100),
+                                repeatPauseDuration: Duration(milliseconds: 200),
                                 child: CircleAvatar(
                                   backgroundColor: color.primaryCol,
                                   radius: 18.r,
@@ -231,9 +237,9 @@ class _SongDisplayState extends State<SongDisplay> {
                                             player.play();}
                                         },
                                       child: music.play  ? Icon(Icons.pause,
-                                      color: color.scaffoldCol,) :
+                                      color: Colors.white,) :
                                       Icon(Icons.play_arrow,
-                                        color: color.scaffoldCol,),
+                                        color: Colors.white,),
                                 ),)
                               ),
                               player.hasNext ? IconButton(onPressed: ()async{
@@ -242,8 +248,11 @@ class _SongDisplayState extends State<SongDisplay> {
                                 music.loading = false;
                               }, icon:
                               Icon(Icons.skip_next,)) :
-                              Icon(Icons.skip_next,color:
-                                Colors.grey,)
+                              const IconButton(
+                                onPressed: null,
+                                icon: Icon(Icons.skip_next,color:
+                                  Colors.grey,),
+                              )
                             ],
                           ),
                           IconButton(onPressed: (){

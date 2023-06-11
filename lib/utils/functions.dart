@@ -54,7 +54,6 @@ Future<List> fetchSongsList(String searchQuery) async {
         s,
       )
   ];
-
   return searchedList;
 }
 
@@ -160,23 +159,21 @@ List<Favourite> getFavSongs(){
 }
 List<Favourite> favs = [];
 
-void loadM(BuildContext context, Map<String, dynamic> val)async{
+void loadM()async{
 
   BuildContext ctx = homeKey.currentContext!;
   ctx.read<MusicProvider>().isPlaying = true;
-
-if(!ctx.read<MusicProvider>().singleT )
- { favs  = context.read<MusicProvider>().songGroup!;}
- Duration? duration = ctx.read<MusicProvider>().singleT ?
-     await playSingleItem(val, ctx) :
-     await playItems(
-         ctx.read<MusicProvider>().songGroup!,ctx
-     );
+//
+// if(!ctx.read<MusicProvider>().singleT )
+//  { favs  = context.read<MusicProvider>().songGroup!;}
+ Duration? duration =
+     await loadSongs(ctx);
 
   ctx.read<MusicProvider>().endV = duration!;
   ctx.read<MusicProvider>().play = true;
   ctx.read<MusicProvider>().loading = false;
   player.play();
+  player.setLoopMode(LoopMode.off);
   ctx.read<MusicProvider>().inSession = true;
 
   player.positionStream.listen((v) {
@@ -199,41 +196,25 @@ if(!ctx.read<MusicProvider>().singleT )
   player.durationStream.listen((dur) {
     ctx.read<MusicProvider>().endV = dur??const Duration();
   });
-
-  if(!ctx.read<MusicProvider>().singleT) {
-
-    positStream = player.currentIndexStream.listen((index) async {
-      ctx.read<MusicProvider>().dispSong = {
-        'ytid': favs[index!].id,
-        'title': favs[index].title,
-        'image': favs[index].imgUrl,
-        'lowResImage': favs[index].imgUrl,
-        'authur': favs[index].artiste,
-      };
+  positStream = player.currentIndexStream.listen((index) async {
+      // ctx.read<MusicProvider>().dispSong = {
+      //   'ytid': favs[index!].id,
+      //   'title': favs[index].title,
+      //   'image': favs[index].imgUrl,
+      //   'lowResImage': favs[index].imgUrl,
+      //   'authur': favs[index].artiste,
+      // };
+      ctx.read<MusicProvider>().songIndex = index!;
     });
-  }
-  // player.playerStateStream.listen((state) async {
-  //   state.processingState == ProcessingState.completed ?
-  //       homeKey.currentContext!.read<MusicProvider>().dispSong = {
-  //         'ytid': favs[player.sequenceState!.currentIndex].id,
-  //         'title': favs[player.sequenceState!.currentIndex].title,
-  //         'image':favs[player.sequenceState!.currentIndex].imgUrl,
-  //         'lowResImage': favs[player.sequenceState!.currentIndex].imgUrl,
-  //         'authur':favs[player.sequenceState!.currentIndex].artiste,
-  //       } : {};
-  //       context.read<MusicProvider>().endV =
-  //       context.read<MusicProvider>().songGroup
-  //       ![player.sequenceState!.currentIndex].duration!;
-  //
-  // });
 }
 
 
 
- playItems(List<Favourite> songs, BuildContext ctx)async{
+ loadSongs( BuildContext ctx)async{
 
    List<AudioSource> aS = [];
-  for (var song in songs) {
+  for (var song in  ctx.read<MusicProvider>().
+  songGroup!) {
     AudioSource a = AudioSource.uri(
       Uri.parse(song.songUrl!),
       tag:  MediaItem(
@@ -249,29 +230,9 @@ if(!ctx.read<MusicProvider>().singleT )
   }
    AudioSource audioSource = ConcatenatingAudioSource(children:
    <AudioSource>[...aS]);
-  Duration? dur = await player.setAudioSource(audioSource);
-  return dur;
+   return  await player.setAudioSource(audioSource);
  }
- playSingleItem(Map<String, dynamic> val,BuildContext ctx)async{
-   final manifest = await yt.
-   videos.streamsClient.
-   getManifest(val["ytid"]);
-   ctx.read<MusicProvider>().songUrl = manifest.audioOnly.withHighestBitrate().
-   url.toString();
-  AudioSource a = AudioSource.uri(
-    Uri.parse(ctx.read<MusicProvider>().songUrl),
-    tag:  MediaItem(
-      // Specify a unique ID for each media item:
-      id: val['ytid'],
-      // Metadata to display in the notification:
-      album: 'Unknown',
-      title: val['title'],
-      artUri: Uri.parse(val['image']),
-    ),
-  );
-   Duration? dur = await player.setAudioSource(a);
-  return dur;
- }
+
 
 // playSingleItemT( Favourite f)async{
 //

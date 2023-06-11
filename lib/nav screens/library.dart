@@ -40,18 +40,28 @@ class _LibraryState extends State<Library> {
                 icon: Icon(Icons.keyboard_arrow_left,
                   color: color.origWhite,),
               ),
-              centerTitle: true,
               title:  Text('Favourites',style: CustomTextStyle(
                   color: color.origWhite,
                   fontSize: 18.sp
               ),),
               backgroundColor: color.scaffoldCol,
               actions: [
+                // IconButton(onPressed: (){
+                //   print(favBox!.length);
+                // }, icon:
+                // Icon(Icons.more_vert,color:color.origWhite,)),
                 IconButton(onPressed: (){
-                  print(favBox!.length);
-                }, icon:
-                Icon(Icons.more_vert,color:color.origWhite,)),
-
+                  context.read<MusicProvider>().
+                  songGroup = favs;
+                  context.read<MusicProvider>().loading = true;
+                  context.read<MusicProvider>().
+                  inSession = false;
+                  Get.to(()=>const SongDisplay());
+                },
+                    icon:
+                    Text('Play All',style: CustomTextStyle(color: color.primaryCol,
+                        fontSize: 16.sp),)),
+                SizedBox(width: 20.w,)
               ],
             ),
             body: favs.isNotEmpty ?
@@ -119,16 +129,11 @@ class _LibraryState extends State<Library> {
                     ],
                   ),
                   onTap: (){
-                    context.read<MusicProvider>().dispSong = {
-                      'ytid': favs[index].id,
-                      'title': favs[index].title,
-                      'image':favs[index].imgUrl,
-                      'lowResImage': favs[index].imgUrl,
-                      'authur':favs[index].artiste,
-
-                    };
-                    context.read<MusicProvider>().singleT = false;
-                    context.read<MusicProvider>().songGroup = favs;
+                    List<Favourite> l1 = favs;
+                    List<Favourite> l3 = l1.sublist(index,l1.length);
+                    List <Favourite>l2 = l1.sublist(0,index);
+                    context.read<MusicProvider>().
+                    songGroup = l3 + l2;
                     context.read<MusicProvider>().loading = true;
                     context.read<MusicProvider>().
                     inSession = false;

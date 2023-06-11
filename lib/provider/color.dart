@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class ColorProvider extends ChangeNotifier{
-  Color _primaryCol = Color(0xff85BE00);
+  Color _primaryCol = Color(0xff7E57C2);
   Color get primaryCol => _primaryCol;
   set primaryCol (Color val){
     _primaryCol = val;

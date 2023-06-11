@@ -28,7 +28,8 @@ class SongWidget extends StatelessWidget {
                 leading: CachedNetworkImage(
                   width: 50.w,
                   height: 50.h,
-                  imageUrl:  music.dispSong['image'],
+                  imageUrl:  music.songGroup!
+                  [music.songIndex].songUrl!,
                   errorWidget: (context, url, error)=>Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: color.blackAcc),
@@ -46,13 +47,15 @@ class SongWidget extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  music.dispSong['title'],
+                  music.songGroup![music.
+                  songIndex].title!,
                   overflow: TextOverflow.ellipsis,
                   style: CustomTextStyle(
                       color: Colors.white
                   ),),
                 subtitle: Text(
-                  music.dispSong['authur'],
+                  music.songGroup![music.
+                  songIndex].artiste!,
                   overflow: TextOverflow.ellipsis,
                   style: CustomTextStyle(
                       fontWeight: FontWeight.w300,

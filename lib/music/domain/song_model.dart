@@ -4,16 +4,17 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 class SongModel {
   final String? id;
   final String? title;
-  final String? image;
   final String? imgUrl;
+  final String? songUrl;
   final Duration? dur;
-  final String? artistes;
+  final String? artiste;
+
   SongModel({
-    this.artistes,
+    this.artiste,
      this.id,
      this.dur,
      this.title,
-     this.image,
+     this.songUrl,
      this.imgUrl
   });
 
@@ -40,9 +41,8 @@ String formatSongTitle(String title) {
       .trim();
 }
 Map<String, dynamic> returnSongLayout(dynamic index, Video song) {
-String d = formatDur(song.duration!);
-print(song.duration);
-  return {
+
+return {
 
   'duration': song.duration,
     'id': index,

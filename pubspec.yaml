@@ -55,6 +55,7 @@ dependencies:
   hive_generator: ^2.0.0
   build_runner:
   speech_to_text:
+  connectivity_plus:
 
 dev_dependencies:
   flutter_test:

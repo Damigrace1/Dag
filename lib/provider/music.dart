@@ -1,7 +1,7 @@
 import 'package:dag/music/data/hive_store.dart';
 import 'package:dag/music/domain/song_model.dart';
 import 'package:flutter/cupertino.dart';
-
+bool notify = false;
 class MusicProvider  extends ChangeNotifier{
   bool _loading = false;
   bool get loading => _loading;
@@ -30,12 +30,7 @@ class MusicProvider  extends ChangeNotifier{
     notifyListeners();
   }
 
-  // SongModel? _song;
-  // SongModel? get song => _song;
-  // set song (SongModel? v){
-  //   _song = v;
-  //   notifyListeners();
-  // }
+
 
   Duration _sV = const Duration();
   Duration get sV => _sV;
@@ -99,6 +94,20 @@ class MusicProvider  extends ChangeNotifier{
   double get dlVal => _dlVal;
   set dlVal (double val){
     _dlVal = val;
+    notifyListeners();
+  }
+
+  int _songIndex = 0;
+  int get songIndex => _songIndex;
+  set songIndex (int val){
+    _songIndex = val;
+    notifyListeners();
+  }
+
+  int _loopMode = 0;
+  int get loopMode => _loopMode;
+  set loopMode (int val){
+    _loopMode = val;
     notifyListeners();
   }
 }

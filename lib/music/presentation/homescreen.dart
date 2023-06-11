@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
+import '../../configs/connectivity.dart';
+import '../../main.dart';
 import '../../nav screens/me.dart';
 import '../../nav screens/search/presentation/search_music.dart';
 import '../../provider/color.dart';
@@ -21,14 +23,20 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 class _HomeScreenState extends State<HomeScreen> {
-
-  final GlobalKey<ScaffoldState> _key = GlobalKey();
   List <Widget> screens = [
     Home(),
     SearchScreen(),
     Library(),
-    Me(),
+    //Me(),
   ];
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    ConnectivityService(context);
+    stt.initialize();
+    user?.put('isNew', false);
+  }
   @override
   Widget build(BuildContext context) {
     return Consumer<HomeProvider>(
@@ -56,8 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 items:   <CurvedNavigationBarItem>[
                   curvdNav(0,"Home",Icons.home,Icons.home_outlined),
                   curvdNav(1,"Search",Icons.search,Icons.search_outlined),
-                  curvdNav(2,"Favourites",Icons.music_note,Icons.music_note_outlined),
-                  curvdNav(3,"Me",Icons.person,Icons.person_outline),
+                  curvdNav(2,"Favourites",Icons.favorite,Icons.favorite_border),
+                 // curvdNav(3,"Me",Icons.person,Icons.person_outline),
                 ],
                 onTap: (index){
                   home.tabIndex = index;

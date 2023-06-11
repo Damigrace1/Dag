@@ -4,8 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import '../main.dart';
+import '../nav screens/search/presentation/search_music.dart';
 import '../provider/color.dart';
 import '../provider/music.dart';
 import 'custom_textstyles.dart';
@@ -74,9 +76,9 @@ class SearchB extends StatelessWidget {
                                   onTap:()async{
                                     music.rec = true;
                                     await  stt.listen(onResult: (res)=>{
-                                      print(res),
-                                      searchCont.text = res.recognizedWords
-                                    });
+                                      print(res.recognizedWords),
+                                      searchCont.text = res.recognizedWords,
+                                    },listenMode: ListenMode.confirmation);
                                     music.rec = false;
                                   },
                                   child: const Icon(Icons.mic)

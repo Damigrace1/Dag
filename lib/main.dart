@@ -2,6 +2,7 @@ import 'package:dag/music/presentation/homescreen.dart';
 import 'package:dag/onboarding/presentation/onboarding.dart';
 import 'package:dag/provider/registry.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
@@ -10,9 +11,12 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+import 'configs/connectivity.dart';
 import 'music/data/hive_store.dart';
 
 Box? favBox;
+Box? user;
+bool netAvail = false;
 SpeechToText stt = SpeechToText();
 Future<void> main()async {
 
@@ -22,9 +26,13 @@ Future<void> main()async {
     androidNotificationOngoing: true,
   );
   await Hive.initFlutter();
-  // Open the peopleBox
   Hive.registerAdapter(FavouriteAdapter());
  favBox = await Hive.openBox('favBox');
+ user = await Hive.openBox('user_details');
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   runApp(const MyApp());
 }
 
@@ -39,7 +47,6 @@ class MyApp extends StatelessWidget {
         designSize: const Size(360, 640),
         minTextAdapt: true,
           builder: (context, child) => GetMaterialApp(
-
             debugShowCheckedModeBanner: false,
             color: Colors.black,
               title: 'Dag',
@@ -48,10 +55,11 @@ class MyApp extends StatelessWidget {
               color: Colors.white
                 ) ,
                 fontFamily: 'Poppins',
-                colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff85BE00)),
+                colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff7E57C2)),
                 useMaterial3: true,
               ),
-              home: HomeScreen()
+              home: user?.get('isNew') == null ?  Onboarding()
+                  : const HomeScreen()
           )),
     );
   }
