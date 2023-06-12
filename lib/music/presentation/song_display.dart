@@ -44,6 +44,7 @@ class _SongDisplayState extends State<SongDisplay> {
   @override
   void dispose() {
     // TODO: implement dispose
+
     super.dispose();
     //positStream?.cancel();
   }

@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dag/music/domain/song_model.dart';
 import 'package:dag/music/presentation/song_display.dart';
 import 'package:dag/provider/color.dart';
+import 'package:dag/provider/home_provider.dart';
 import 'package:dag/utils/custom_textstyles.dart';
 import 'package:dag/utils/search.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,6 @@ class SearchScreen extends StatefulWidget {
 final yt = YoutubeExplode();
 class _SearchScreenState extends State<SearchScreen> {
   // List<Map<String, dynamic>>? songs;
-  bool reload = false;
 void listenTo(){
   context.read<MusicProvider>().rec = true;
   stt.listen(onResult: (res)=>{
@@ -62,247 +62,210 @@ void listenTo(){
   @override
   Widget build(BuildContext context) {
 
-    return SafeArea(
+    return
+      SafeArea(
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-          SizedBox(height: 20.h,),
-          Center(
-            child: Stack(
-              children:  [
-                Container(
-                  width: 339.w,
-                  height: 50.h,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        width: 1,color: Colors.white
+            SizedBox(height: 20.h,),
+            Center(
+              child: Stack(
+                children:  [
+                  Container(
+                    width: 339.w,
+                    height: 50.h,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          width: 1,color: Colors.white
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+
                     ),
-                    borderRadius: BorderRadius.circular(20),
-
                   ),
-                ),
-                Positioned.fill(
-                    child: Row(
-                      children: [
-                        SizedBox(width: 10.w,),
-                        Expanded(
-                          child:  TextField(
-                            autofocus: false,
-                            onChanged: (val){
-                              setState(() {
-                              });
-                            },
-                            readOnly: false,
-                            style: CustomTextStyle(
-                                color: Colors.white
-                            ),
-                            controller: searchCont,
-                            decoration: InputDecoration.collapsed(
-                                hintText: 'Start searching',
-                                hintStyle: CustomTextStyle(color: Colors.grey,)
-                            ),
-                          ),
-                        ),
-                        Consumer2<ColorProvider,MusicProvider>(
-                            builder: (context,color,music,child){
-                              return
-                                AvatarGlow(
-                                    glowColor: Colors.green,
-                                    endRadius: 40.r,
-                                    duration: Duration(milliseconds: 2000),
-                                    repeat: true,
-                                    animate: music.rec,
-                                    showTwoGlows: true,
-                                    repeatPauseDuration: Duration(milliseconds: 100),
-                                    child: CircleAvatar(
-                                      backgroundColor: Colors.grey,
-                                      child: InkWell(
-                                          onTap:()async{
-                                            listenTo();
-                                          },
-                                          child: const Icon(Icons.mic)
-                                      ),)
-                                );
-
-                            }),
-                        IconButton(
-                          onPressed: (){
-                            searchCont.clear();
-                          },
-                          icon: Icon(
-                              Icons.clear,
-                              color:  Colors.grey
-                          ),
-                        ),
-                        SizedBox(width: 10.w,),
-                      ],
-                    ))
-              ],
-            ),
-          ),
-     Consumer<MusicProvider>(
-    builder: (context,music,child){
-      return  FutureBuilder(
-        future: fetchSongsList(searchCont.text),
-        builder: (context, d) {
-          if (d.connectionState == ConnectionState.done)
-          {
-            return d.data != null ?
-            ListView.builder(
-              shrinkWrap: true,
-              addAutomaticKeepAlives: false,
-              addRepaintBoundaries: false,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: d.data?.length,
-              itemBuilder: (BuildContext ctxt, int index) {
-
-                return Padding(
-                    padding: const EdgeInsets.only(top: 5, bottom: 5),
-                    child: ListTile(
-                      leading: CachedNetworkImage(
-                        width: 60.w,
-                        height: 60.h,
-                        imageUrl:
-                        d.data![index]['lowResImage'].toString(),
-                        errorWidget: (context, url, error){
-                          print(error);
-                          return Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: context.read<ColorProvider>().blackAcc),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Image.asset('images/mus_pla.jpg'));},
-                        imageBuilder: (context, imageProvider) => DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            image: DecorationImage(
-                              image: imageProvider,
-                              centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
-                            ),
-                          ),
-                        ),
-                      ),
-                      title: Text(
-                        formatTit(d.data![index]['title']),
-                        overflow: TextOverflow.ellipsis,
-                        style: CustomTextStyle(
-                            color: Colors.white
-                        ),),
-                      subtitle: Text(
-                        formatTit(d.data![index]['authur']),
-                        overflow: TextOverflow.ellipsis,
-                        style: CustomTextStyle(
-                            fontWeight: FontWeight.w300,
-                            fontSize: 14.sp,
-                            color: Colors.grey
-                        ),),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
+                  Positioned.fill(
+                      child: Row(
                         children: [
-                          IconButton(onPressed: ()async{
-                            final manifest = await yt.
-                            videos.streamsClient.
-                            getManifest(d.data![index]["ytid"]);
-                            Favourite fav = Favourite()
-                              ..id = d.data![index]['ytid']
-                              ..songUrl = manifest.audioOnly.withHighestBitrate().
-                              url.toString()
-                              ..title = formatTit(d.data![index]['title'])
-                              ..imgUrl = d.data![index]['image']
-                              ..artiste = d.data![index]['authur']
-                              ..duration = d.data![index]['duration']??const Duration(seconds: 25);
-                            favBox?.put(d.data![index]["ytid"],fav);
-                            print("retrieved string: ${
-                                favBox?.get(d.data![index]["ytid"]).duration
-                            }");
-                            showToast(context, 'Music added to Favourites');
-                          }, icon:
-                          Icon(Icons.favorite_border,
-                            size: 25.sp,
-                            color:
-                            context.read<ColorProvider>().origWhite,)),
-                          // Text(
-                          //   d.data![index]['duration']
-                          //       .toString(),
-                          //   overflow: TextOverflow.ellipsis,
-                          //   style: CustomTextStyle(
-                          //       fontWeight: FontWeight.w300,
-                          //       fontSize: 14.sp,
-                          //       color: Colors.grey
-                          //   ),),
+                          SizedBox(width: 10.w,),
+                          Expanded(
+                            child:  TextField(
+                              autofocus: false,
+                              onChanged: (val){
+                                setState(() {
+                                });
+                              },
+                              readOnly: false,
+                              style: CustomTextStyle(
+                                  color: Colors.white
+                              ),
+                              controller: searchCont,
+                              decoration: InputDecoration.collapsed(
+                                  hintText: 'Start searching',
+                                  hintStyle: CustomTextStyle(color: Colors.grey,)
+                              ),
+                            ),
+                          ),
+                          Consumer<MusicProvider>(
+                              builder: (context,music,child){
+                                return
+                                  AvatarGlow(
+                                      glowColor: Colors.green,
+                                      endRadius: 40.r,
+                                      duration: Duration(milliseconds: 2000),
+                                      repeat: true,
+                                      animate: music.rec,
+                                      showTwoGlows: true,
+                                      repeatPauseDuration: Duration(milliseconds: 100),
+                                      child: CircleAvatar(
+                                        backgroundColor: Colors.grey,
+                                        child: InkWell(
+                                            onTap:()async{
+                                              listenTo();
+                                            },
+                                            child: const Icon(Icons.mic)
+                                        ),)
+                                  );
+
+                              }),
+                          IconButton(
+                            onPressed: (){
+                              searchCont.clear();
+                            },
+                            icon: Icon(
+                                Icons.clear,
+                                color:  Colors.grey
+                            ),
+                          ),
+                          SizedBox(width: 10.w,),
                         ],
-                      ),
-                      onTap: ()async{
-                        final manifest = await yt.
-                        videos.streamsClient.
-                        getManifest(d.data![index]["ytid"]);
-                        context.read<MusicProvider>().songGroup = [
-                          Favourite()
-                            ..id = d.data![index]['ytid']
-                            ..songUrl = manifest.audioOnly.withHighestBitrate().
-                            url.toString()
-                            ..title = formatTit(d.data![index]['title'])
-                            ..imgUrl = d.data![index]['image']
-                            ..artiste = d.data![index]['authur']
-                            ..duration = d.data![index]['duration']??const Duration(seconds: 25)
-                        ] ;
-                        context.read<MusicProvider>().loading = true;
-                        context.read<MusicProvider>().
-                        inSession = false;
-                        Get.to(()=>const SongDisplay());
-                      },
-                    )
+                      ))
+                ],
+              ),
+            ),
+            FutureBuilder(
+                    future: fetchSongsList(searchCont.text),
+                    builder: (context, d) {
+                      print('dfghjkl');
+                      if (d.connectionState == ConnectionState.done)
+                      {
+                        return d.data != null ?
+                        ListView.builder(
+                          shrinkWrap: true,
+                          addAutomaticKeepAlives: false,
+                          addRepaintBoundaries: false,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: d.data?.length,
+                          itemBuilder: (BuildContext ctxt, int index) {
 
-                );
-              },
-            )
-                :Column(
-              children: [
-                SizedBox(height: 200.h,),
-                Center(child:
-                Text('No results found! 😔',style: CustomTextStyle(
-                    color: Colors.grey
-                ),),),
-              ],
-            );
-          }
-          else {
-            return Column(
-              children: [
-                SizedBox(height: 200.h,),
-                const CircularProgressIndicator.adaptive(),
-              ],
-            );
-          }
-        },
-      );
-    })
+                            return Padding(
+                                padding: const EdgeInsets.only(top: 5, bottom: 5),
+                                child: ListTile(
+                                  leading: CachedNetworkImage(
+                                    width: 60.w,
+                                    height: 60.h,
+                                    imageUrl:
+                                    d.data![index]['lowResImage'].toString(),
+                                    errorWidget: (context, url, error){
+                                      return Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: context.read<ColorProvider>().blackAcc),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Image.asset('images/mus_pla.jpg'));},
+                                    imageBuilder: (context, imageProvider) => DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        image: DecorationImage(
+                                          image: imageProvider,
+                                          centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    formatTit(d.data![index]['title']),
+                                    overflow: TextOverflow.ellipsis,
+                                    style: CustomTextStyle(
+                                        color: Colors.white
+                                    ),),
+                                  subtitle: Text(
+                                    formatTit(d.data![index]['authur']),
+                                    overflow: TextOverflow.ellipsis,
+                                    style: CustomTextStyle(
+                                        fontWeight: FontWeight.w300,
+                                        fontSize: 14.sp,
+                                        color: Colors.grey
+                                    ),),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(onPressed: ()async{
+                                        final manifest = await yt.
+                                        videos.streamsClient.
+                                        getManifest(d.data![index]["ytid"]);
+                                        Favourite fav = Favourite()
+                                          ..id = d.data![index]['ytid']
+                                          ..songUrl = manifest.audioOnly.withHighestBitrate().
+                                          url.toString()
+                                          ..title = formatTit(d.data![index]['title'])
+                                          ..imgUrl = d.data![index]['image']
+                                          ..artiste = d.data![index]['authur']
+                                          ..duration = d.data![index]['duration']??const Duration(seconds: 25);
+                                        favBox?.put(d.data![index]["ytid"],fav);
+                                        showToast(context, 'Music added to Favourites');
+                                      }, icon:
+                                      Icon(Icons.favorite_border,
+                                        size: 25.sp,
+                                        color:
+                                        context.read<ColorProvider>().origWhite,)),
+                                    ],
+                                  ),
+                                  onTap: ()async{
+                                    final manifest = await yt.
+                                    videos.streamsClient.
+                                    getManifest(d.data![index]["ytid"]);
+                                    context.read<MusicProvider>().songGroup = [
+                                      Favourite()
+                                        ..id = d.data![index]['ytid']
+                                        ..songUrl = manifest.audioOnly.withHighestBitrate().
+                                        url.toString()
+                                        ..title = formatTit(d.data![index]['title'])
+                                        ..imgUrl = d.data![index]['image']
+                                        ..artiste = d.data![index]['authur']
+                                        ..duration = d.data![index]['duration']??const Duration(seconds: 25)
+                                    ] ;
+                                    context.read<MusicProvider>().loading = true;
+                                    context.read<MusicProvider>().inSession = false;
+                                    Get.to(()=>const SongDisplay());
+                                  },
+                                )
 
-            // Expanded(
-            //   child: ListView.builder(
-            //       shrinkWrap: true,
-            //       itemCount: songs?.length??0,
-            //       itemBuilder: (context, index){
-            //         return ListTile(
-            //           onTap: ()async{
-            //           },
-            //           title: Text(
-            //               songs['title']
-            //                   .toString()
-            //                   .split('(')[0]
-            //                   .replaceAll('&quot;', '"')
-            //                   .replaceAll('&amp;', '&'),
-            //           ,style: CustomTextStyle(
-            //               color: Colors.white
-            //           ),),
-            //
-            //           // tileColor: context.read<ColorProvider>().origDeepAsh,
-            //         );
-            //       }),
-            // )
-        ],),
+                            );
+                          },
+                        )
+                            :Column(
+                          children: [
+                            SizedBox(height: 200.h,),
+                            Center(child:
+                            Text('No results found! 😔',style: CustomTextStyle(
+                                color: Colors.grey
+                            ),),),
+                          ],
+                        );
+                      }
+                      else {
+                        return Column(
+                          children: [
+                            SizedBox(height: 200.h,),
+                            const CircularProgressIndicator.adaptive(),
+                          ],
+                        );
+                      }
+                    },
+                  )
+          ],),
       ),
-    );
+      );
+
   }
 }
