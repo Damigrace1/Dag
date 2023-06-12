@@ -65,12 +65,14 @@ void downloadSong()async{
   ].request();
 
   if(statuses[Permission.storage]!.isGranted){
-    String saveName = "${homeKey.currentContext?.read<MusicProvider>().dispSong['title']}.mp3";
+    String saveName = "${homeKey.currentContext?.read<MusicProvider>().songGroup![
+    homeKey.currentContext!.read<MusicProvider>().songIndex].title!}.mp3";
     String savePath = "${dl!.path}/$saveName";
 
     try {
       await Dio().download(
-          homeKey.currentContext!.read<MusicProvider>().songUrl,
+          homeKey.currentContext!.read<MusicProvider>().songGroup![
+          homeKey.currentContext!.read<MusicProvider>().songIndex].songUrl!,
           savePath,
           onReceiveProgress: (received, total) {
             if (total != -1) {

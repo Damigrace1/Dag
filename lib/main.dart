@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
               color: Colors.white
                 ) ,
                 fontFamily: 'Poppins',
-                colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff7E57C2)),
+                colorScheme: ColorScheme.fromSeed(seedColor: Color(0xffF9CE80)),
                 useMaterial3: true,
               ),
               home: user?.get('isNew') == null ?  Onboarding()

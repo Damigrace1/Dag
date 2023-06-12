@@ -30,6 +30,7 @@ final yt = YoutubeExplode();
 class _SearchScreenState extends State<SearchScreen> {
   // List<Map<String, dynamic>>? songs;
 void listenTo(){
+  showToast(context, 'Speak to search now');
   context.read<MusicProvider>().rec = true;
   stt.listen(onResult: (res)=>{
     print('dfghjkl;'),
@@ -43,15 +44,7 @@ void listenTo(){
       listenMode: ListenMode.dictation);
   context.read<MusicProvider>().rec = false;
 }
-  @override
-  void initState() {
-    // TODO: implement initState
-   Future.delayed(Duration.zero,(){
-     showToast(context, 'Speak to search now');
-     listenTo();
-   });
-    super.initState();
-  }
+
   @override
   void dispose() {
     // TODO: implement dispose

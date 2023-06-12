@@ -3,7 +3,10 @@ import 'package:dag/utils/custom_textstyles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../../provider/color.dart';
 import '../domain/content.dart';
 
 
@@ -59,6 +62,8 @@ class _OnboardingState extends State<Onboarding> {
                       Text(
                         contents[i].title,
                         style: CustomTextStyle(
+                          spacing: 10.sp,
+                          fontFamily: GoogleFonts.bangers(),
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
                           fontSize: 30.sp
@@ -90,8 +95,8 @@ class _OnboardingState extends State<Onboarding> {
             ),
           ),
           SizedBox(height: 20.h,),
-          ElevatedButton(
-              onPressed: () {
+          InkWell(
+              onTap: () {
                 if (currentIndex == contents.length - 1) {
                   Navigator.pushReplacement(
                     context,
@@ -104,14 +109,29 @@ class _OnboardingState extends State<Onboarding> {
                   duration: Duration(milliseconds: 100),
                   curve: Curves.bounceIn,
                 );},
-              child: Text(  currentIndex == contents.length
-                  - 1 ? "Continue" : "Next",style: CustomTextStyle(
-                color: Colors.white
+              child: Container(
+                height: 40.h,
+                width: 200.w,
+                decoration: BoxDecoration(
+                  color: context.read<ColorProvider>().primaryCol,
+                  borderRadius: BorderRadius.circular(12.w)
+                ),
+                child: Center(
+                  child: Text(  currentIndex == contents.length
+                      - 1 ? "Continue" : "Next",style:
+                      CustomTextStyle(
+                        color: context.read<ColorProvider>().scaffoldCol
+                      )
+                      // GoogleFonts.acme(
+                      //     textStyle: GoogleFonts.actor
+                      //       (color: Colors.blue, letterSpacing: .5)
+                      // )
+                  // CustomTextStyle(
+                  //   color: Colors.black,
+                  // ),
+                  ),
+                ),
               ),),
-          style: ElevatedButton.styleFrom(
-            minimumSize: Size(300.w, 40.h),
-            backgroundColor: Color(0xff7E57C2)
-          ),),
           SizedBox(height: 20.h,)
         ],
       ),

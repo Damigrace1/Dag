@@ -86,6 +86,16 @@ class _HomeState extends State<Home> {
                   fontWeight: FontWeight.bold,
                   fontSize: 28.sp,color: Colors.white
               ),),
+              // AnimatedDrawing.svg(
+              //   'images/81966-girl-listening-to-music.gif',
+              //   run: true,
+              //   duration: new Duration(seconds: 3),
+              //   onFinish: () => setState(() {
+              //     print('sdfghjk');
+              //   }),
+              // ),
+            //
+
               SizedBox(height: 15.h,),
               Row(children: [
                 browseText(0,'All',"all songs"),
