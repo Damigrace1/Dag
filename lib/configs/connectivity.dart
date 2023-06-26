@@ -11,7 +11,7 @@ import '../main.dart';
 
 class ConnectivityService {
 
-  ConnectivityService(BuildContext context) {
+  static initConnectivityService(BuildContext context) {
     // Initialize the connectivity plugin
 
     Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {

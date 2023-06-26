@@ -28,8 +28,8 @@ class SongWidget extends StatelessWidget {
                 leading: CachedNetworkImage(
                   width: 50.w,
                   height: 50.h,
-                  imageUrl:  music.songGroup!
-                  [music.songIndex].songUrl!,
+                  imageUrl:  music.musicModelGroup!
+                  [music.songIndex].imgUrl??'',
                   errorWidget: (context, url, error)=>Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: color.blackAcc),
@@ -47,34 +47,38 @@ class SongWidget extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  music.songGroup![music.
+                  music.musicModelGroup![music.
                   songIndex].title!,
                   overflow: TextOverflow.ellipsis,
                   style: CustomTextStyle(
                       color: Colors.white
                   ),),
                 subtitle: Text(
-                  music.songGroup![music.
-                  songIndex].artiste!,
+                  music.musicModelGroup![music.
+                  songIndex].author??'',
                   overflow: TextOverflow.ellipsis,
                   style: CustomTextStyle(
                       fontWeight: FontWeight.w300,
                       fontSize: 14.sp,
                       color: Colors.grey
                   ),),
-                trailing: AvatarGlow(
+                trailing: music.loading ?
+                const CircularProgressIndicator.
+                adaptive() :
+                AvatarGlow(
                     glowColor: color.primaryCol,
-                    endRadius: 35.r,
+                    endRadius: 32.r,
                     duration: Duration(milliseconds: 2000),
                     repeat: true,
                     animate: !music.play,
                     showTwoGlows: true,
-                    repeatPauseDuration: Duration(milliseconds: 100),
+                    repeatPauseDuration: Duration(milliseconds: 200),
                     child: CircleAvatar(
-                      backgroundColor: color.primaryCol,
+                      backgroundColor: Colors.white,
                       radius: 18.r,
                       child: InkWell(
                         onTap:()async{
+
                           music.play = !music.play;
                           if(!music.play){
                             player.pause();
@@ -82,10 +86,10 @@ class SongWidget extends StatelessWidget {
                           else{
                             player.play();}
                         },
-                        child: music.play ? Icon(Icons.pause,
-                          color: color.scaffoldCol,) :
+                        child: music.play  ? Icon(Icons.pause,
+                          color: Colors.black,) :
                         Icon(Icons.play_arrow,
-                          color: color.scaffoldCol,),
+                          color: Colors.black,),
                       ),)
                 ),
                 onTap: (){

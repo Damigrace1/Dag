@@ -7,6 +7,8 @@ import 'package:dag/provider/home_provider.dart';
 import 'package:dag/utils/functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_gif/flutter_gif.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -14,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
+import '../controllers/music_operations.dart';
 import '../music/data/hive_store.dart';
 import '../music/presentation/song_display.dart';
 import '../provider/music.dart';
@@ -25,16 +28,50 @@ class Home extends StatefulWidget {
   @override
   State<Home> createState() => _HomeState();
 }
-
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
   List defaultSongs = [];
   String searchT = 'all';
+  late FlutterGifController controller;
   @override
   void initState() {
     // TODO: implement initState
+    controller = FlutterGifController(vsync: this);
     super.initState();
+   // scrollController.addListener(_scrollListener);
 
   }
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    //scrollController.removeListener(_scrollListener);
+    // scrollController.dispose();
+    controller.dispose();
+    super.dispose();
+
+  }
+ ScrollController scrollController = ScrollController();
+
+  // Future<void> _scrollListener() async {
+  //   if (scrollController.position.userScrollDirection == ScrollDirection.reverse)
+  //   {
+  //     print('scrolling down');
+  //     for( int i = 50 ; i > 2 ; i-- ){
+  //       context.read<HomeProvider>().navHeight = double.parse(i.toString());
+  //       await Future.delayed(Duration(milliseconds: 12));
+  //     }
+  //     // User is scrolling down, hide the bottom navigation bar
+  //   context.read<HomeProvider>().showNavBar = false;
+  //   } else if (scrollController.position.userScrollDirection == ScrollDirection.forward) {
+  //     // User is scrolling up, show the bottom navigation bar
+  //     print('scrolling up');
+  //     for( int i = 0 ; i < 50 ; i++ ){
+  //       context.read<HomeProvider>().navHeight = double.parse(i.toString());
+  //       await Future.delayed(Duration(milliseconds: 12));
+  //     }
+  //     context.read<HomeProvider>().showNavBar = true;
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
    //  yt.search.getQuerySuggestions('christian').then((value) {
@@ -78,6 +115,7 @@ class _HomeState extends State<Home> {
       body: Padding(
         padding:  EdgeInsets.symmetric(horizontal: 15.w),
         child: SingleChildScrollView(
+          controller:  scrollController,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,23 +289,10 @@ class _HomeState extends State<Home> {
       ) {
     return InkWell(
       onTap: ()async{
-        final manifest = await yt.
-        videos.streamsClient.
-        getManifest(song["ytid"]);
-        context.read<MusicProvider>().songGroup = [
-          Favourite()
-            ..id = song['ytid']
-            ..songUrl = manifest.audioOnly.withHighestBitrate().
-            url.toString()
-            ..title = formatTit(song['title'])
-            ..imgUrl = song['image']
-            ..artiste = song['authur']
-            ..duration = song['duration']??const Duration(seconds: 25)
-        ] ;
-        context.read<MusicProvider>().loading = true;
-        context.read<MusicProvider>().
-        inSession = false;
-        Get.to(()=>const SongDisplay());
+        MusicOperations().loadSingleMusic(
+            context,
+            controller,
+            song);
       },
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 15.w),

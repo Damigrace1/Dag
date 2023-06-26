@@ -1,4 +1,6 @@
 import 'package:hive/hive.dart';
+
+import '../../utils/functions.dart';
 part 'hive_store.g.dart';
 @HiveType(typeId:0)
 class Favourite extends HiveObject{
@@ -6,7 +8,7 @@ class Favourite extends HiveObject{
   String? title;
 
   @HiveField(1)
-  String? artiste;
+  String? authur;
 
   @HiveField(2)
   String? songUrl;
@@ -19,4 +21,6 @@ class Favourite extends HiveObject{
 
   @HiveField(5)
   Duration? duration;
+
+
 }

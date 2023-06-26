@@ -1,6 +1,12 @@
+import 'package:dag/models/music_model.dart';
+import 'package:dag/models/video_model.dart';
 import 'package:dag/music/data/hive_store.dart';
 import 'package:dag/music/domain/song_model.dart';
+import 'package:dag/utils/enums.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_media_metadata/flutter_media_metadata.dart';
+
+import '../views/searchHistWidget.dart';
 bool notify = false;
 class MusicProvider  extends ChangeNotifier{
   bool _loading = false;
@@ -58,6 +64,7 @@ class MusicProvider  extends ChangeNotifier{
     _rec = val;
     notifyListeners();
   }
+
   List<Favourite>? _songGroup;
   List<Favourite>? get songGroup => _songGroup;
   set songGroup (List<Favourite>? val){
@@ -77,6 +84,14 @@ class MusicProvider  extends ChangeNotifier{
     _isPlaying = val;
     notifyListeners();
   }
+
+  bool _isFav = false;
+  bool get isFav => _isFav;
+  set isFav (bool val){
+    _isFav = val;
+    notifyListeners();
+  }
+
   Duration _bV = const Duration();
   Duration get bV => _bV;
   set bV (Duration v){
@@ -104,10 +119,53 @@ class MusicProvider  extends ChangeNotifier{
     notifyListeners();
   }
 
-  int _loopMode = 0;
-  int get loopMode => _loopMode;
-  set loopMode (int val){
+   PlayMode _loopMode = PlayMode.one;
+  PlayMode get loopMode => _loopMode;
+  set loopMode (PlayMode val){
     _loopMode = val;
+    notifyListeners();
+  }
+  List<Favourite> _favSongs = [];
+  List<Favourite> get favSongs => _favSongs;
+  set favSongs (List<Favourite> val){
+    _favSongs = val;
+    notifyListeners();
+  }
+
+  List<SearchHistWidget> _searchHistWid = [];
+  List<SearchHistWidget> get searchHistWid => _searchHistWid;
+  set searchHistWid (List<SearchHistWidget> val){
+    _searchHistWid = val;
+    notifyListeners();
+  }
+
+  List<Metadata> _localMusicList = [];
+  List<Metadata> get localMusicList => _localMusicList;
+  set localMusicList (List<Metadata> val){
+    _localMusicList = val;
+    notifyListeners();
+  }
+
+  List<VideoData> _localVideoList = [];
+  List<VideoData> get localVideoList => _localVideoList;
+  set localVideoList (List<VideoData> val){
+    _localVideoList = val;
+    notifyListeners();
+  }
+
+  List<MusicModel>? _musicModelGroup;
+  List<MusicModel>? get musicModelGroup => _musicModelGroup;
+  set musicModelGroup (List<MusicModel>? val){
+    _musicModelGroup = val;
+    notifyListeners();
+  }
+
+
+
+  bool _isLocalPlay = false;
+  bool get isLocalPlay  => _isLocalPlay ;
+  set isLocalPlay  (bool val){
+    _isLocalPlay  = val;
     notifyListeners();
   }
 }

@@ -1,18 +1,24 @@
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
+import 'package:dag/configs/setup.dart';
 import 'package:dag/nav%20screens/home.dart';
 import 'package:dag/nav%20screens/library.dart';
+import 'package:dag/views/local_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 import '../../configs/connectivity.dart';
+import '../../controllers/local_media.dart';
 import '../../main.dart';
 import '../../nav screens/me.dart';
 import '../../nav screens/search/presentation/search_music.dart';
 import '../../provider/color.dart';
 import '../../provider/home_provider.dart';
+import '../../provider/music.dart';
 import '../../utils/custom_textstyles.dart';
+import '../../utils/functions.dart';
+import '../../utils/global_declarations.dart';
 
 
 final GlobalKey homeKey = GlobalKey();
@@ -22,20 +28,21 @@ class HomeScreen extends StatefulWidget {
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
+
+
 class _HomeScreenState extends State<HomeScreen> {
   List <Widget> screens = [
     Home(),
     SearchScreen(),
     Library(),
+    LocalPlayer()
     //Me(),
   ];
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    ConnectivityService(context);
-    stt.initialize();
-    user?.put('isNew', false);
+  Setup().init(context);
   }
   @override
   Widget build(BuildContext context) {
@@ -65,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   curvdNav(0,"Home",Icons.home,Icons.home_outlined),
                   curvdNav(1,"Search",Icons.search,Icons.search_outlined),
                   curvdNav(2,"Favourites",Icons.favorite,Icons.favorite_border),
+                  curvdNav(3,"Local Music",Icons.folder_rounded,Icons.folder_outlined),
                  // curvdNav(3,"Me",Icons.person,Icons.person_outline),
                 ],
                 onTap: (index){

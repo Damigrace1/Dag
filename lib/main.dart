@@ -16,6 +16,7 @@ import 'music/data/hive_store.dart';
 
 Box? favBox;
 Box? user;
+Box? searchBox;
 bool netAvail = false;
 SpeechToText stt = SpeechToText();
 Future<void> main()async {
@@ -28,8 +29,17 @@ Future<void> main()async {
   await Hive.initFlutter();
   Hive.registerAdapter(FavouriteAdapter());
  favBox = await Hive.openBox('favBox');
+searchBox = await Hive.openBox('sBox');
  user = await Hive.openBox('user_details');
-  SystemChrome.setPreferredOrientations([
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor:
+    Color(0xfff9ce80), // Set the status bar color to transparent
+    systemNavigationBarColor:
+    Colors.black, // Set the systemNavigation bar color to transparent
+  ));
+
+  // Set the preferred screen orientations for the app (portrait mode only)
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);

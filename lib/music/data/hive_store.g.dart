@@ -18,7 +18,7 @@ class FavouriteAdapter extends TypeAdapter<Favourite> {
     };
     return Favourite()
       ..title = fields[0] as String?
-      ..artiste = fields[1] as String?
+      ..authur = fields[1] as String?
       ..songUrl = fields[2] as String?
       ..imgUrl = fields[3] as String?
       ..id = fields[4] as String?;
@@ -31,7 +31,7 @@ class FavouriteAdapter extends TypeAdapter<Favourite> {
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)
-      ..write(obj.artiste)
+      ..write(obj.authur)
       ..writeByte(2)
       ..write(obj.songUrl)
       ..writeByte(3)
