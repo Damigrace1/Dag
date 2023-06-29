@@ -94,12 +94,12 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    print(context.read<MusicProvider>().songIndex);
-    if(context.read<MusicProvider>().searchHistWid.isEmpty){
-      context.read<MusicProvider>().searchHistWid.add(
-        SearchHistWidget(text: '')
-      );
-    }
+    // print(context.read<MusicProvider>().songIndex);
+    // if(context.read<MusicProvider>().searchHistWid.isEmpty){
+    //   context.read<MusicProvider>().searchHistWid.add(
+    //     SearchHistWidget(text: '')
+    //   );
+    // }
     return Scaffold(
       key: searchPageKey,
       backgroundColor: Colors.black,
@@ -231,7 +231,11 @@ class _SearchScreenState extends State<SearchScreen>
                           Flexible(
                               flex: 9,
                               child: FutureBuilder(
-                                future: fetchSongsList(context.read<MusicProvider>().searchHistWid.reversed.first.text),
+                                future: fetchSongsList(
+                                    context.read<MusicProvider>().searchHistWid.isNotEmpty ?
+                                    context.read<MusicProvider>().searchHistWid.reversed.first.text :
+                                        ''
+                                ),
                                 builder: (context, d) {
                                   if (d.connectionState == ConnectionState.done) {
                                     return d.data != null

@@ -295,75 +295,73 @@ class _SongDisplayState extends State<SongDisplay>
                                   )
                       ],
                     ),
-                  if(  !music.isLocalPlay)
-                    IconButton(
-                        onPressed: () {
-                          if (music.isFav) {
-                            FavBox.removeFromFavourite(context
-                                .read<MusicProvider>()
-                                .favSongs[music.songIndex]
-                                .id!);
-                            music.isFav = false;
-                            rebuildLibraryPage();
-                            setState(() {});
-                          } else {
-                            music.isFav = true;
-                            MusicOperations().saveToFavourites(context,
-                                music.musicModelGroup![music.songIndex]);
-                          }
-                        },
-                        icon:
-                        music.isFav
-                            ? Icon(
-                                Icons.favorite_outlined,
-                                color: color.primaryCol,
-                              )
-                            : Icon(
-                                Icons.favorite_outline,
-                                color: color.primaryCol,
-                              )
+                    if (!music.isLocalPlay)
+                      IconButton(
+                          onPressed: () {
+                            if (music.isFav) {
+                              FavBox.removeFromFavourite(context
+                                  .read<MusicProvider>()
+                                  .favSongs[music.songIndex]
+                                  .id!);
+                              music.isFav = false;
+                              rebuildLibraryPage();
+                              setState(() {});
+                            } else {
+                              music.isFav = true;
+                              MusicOperations().saveToFavourites(context,
+                                  music.musicModelGroup![music.songIndex]);
+                            }
+                          },
+                          icon: music.isFav
+                              ? Icon(
+                                  Icons.favorite_outlined,
+                                  color: color.primaryCol,
+                                )
+                              : Icon(
+                                  Icons.favorite_outline,
+                                  color: color.primaryCol,
+                                )
 
-                        //TODO: downoad disabled due to youtube video sharing terms
-                        // IconButton(onPressed: (){
-                        //   music.dlVal == 0 ?{
-                        //   downloadSong(),
-                        //     showPersistentSnackbar(context, 'message'),
-                        //   }
-                        //       :
-                        //   {
-                        //
-                        //     showToast(context,
-                        //     'Download already in progress')
-                        //   };
-                        // }, icon:
-                        // Icon(Icons.download)),
-                        )
+                          //TODO: downoad disabled due to youtube video sharing terms
+                          // IconButton(onPressed: (){
+                          //   music.dlVal == 0 ?{
+                          //   downloadSong(),
+                          //     showPersistentSnackbar(context, 'message'),
+                          //   }
+                          //       :
+                          //   {
+                          //
+                          //     showToast(context,
+                          //     'Download already in progress')
+                          //   };
+                          // }, icon:
+                          // Icon(Icons.download)),
+                          )
                     else
-                    IconButton(
-                        onPressed: () {
-                        showToast('This feature is coming soon.');
-                        },
-                        icon:
-                        Icon(
-                          Icons.playlist_add,
-                          color: color.primaryCol,
-                        )
+                      IconButton(
+                          onPressed: () {
+                            //    showToast('This feature is coming soon.');
+                          },
+                          icon: Icon(
+                            Icons.playlist_add,
+                            color: Colors.grey,
+                          )
 
-                      //TODO: downoad disabled due to youtube video sharing terms
-                      // IconButton(onPressed: (){
-                      //   music.dlVal == 0 ?{
-                      //   downloadSong(),
-                      //     showPersistentSnackbar(context, 'message'),
-                      //   }
-                      //       :
-                      //   {
-                      //
-                      //     showToast(context,
-                      //     'Download already in progress')
-                      //   };
-                      // }, icon:
-                      // Icon(Icons.download)),
-                    )
+                          //TODO: downoad disabled due to youtube video sharing terms
+                          // IconButton(onPressed: (){
+                          //   music.dlVal == 0 ?{
+                          //   downloadSong(),
+                          //     showPersistentSnackbar(context, 'message'),
+                          //   }
+                          //       :
+                          //   {
+                          //
+                          //     showToast(context,
+                          //     'Download already in progress')
+                          //   };
+                          // }, icon:
+                          // Icon(Icons.download)),
+                          )
                   ],
                 ),
               ],

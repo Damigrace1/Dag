@@ -75,10 +75,10 @@ class _LibraryState extends State<Library>with SingleTickerProviderStateMixin {
             //   print(favBox!.length);
             // }, icon:
             // Icon(Icons.more_vert,color:color.origWhite,)),
+            music.favSongs.isNotEmpty ?
             IconButton(
                 onPressed: () {
                   List<Map<String, dynamic>> remoteSong = [];
-
                   music.favSongs.forEach((favSong) {
                     remoteSong.add(
                       {
@@ -102,7 +102,12 @@ class _LibraryState extends State<Library>with SingleTickerProviderStateMixin {
                   'Play All',
                   style:
                       CustomTextStyle(color: color.primaryCol, fontSize: 16.sp),
-                )),
+                )) :
+            Text(
+              'Play All',
+              style:
+              CustomTextStyle(color: Colors.grey, fontSize: 16.sp),
+            ),
             SizedBox(
               width: 20.w,
             )

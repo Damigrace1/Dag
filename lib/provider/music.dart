@@ -119,7 +119,7 @@ class MusicProvider  extends ChangeNotifier{
     notifyListeners();
   }
 
-   PlayMode _loopMode = PlayMode.one;
+   PlayMode _loopMode = PlayMode.all;
   PlayMode get loopMode => _loopMode;
   set loopMode (PlayMode val){
     _loopMode = val;

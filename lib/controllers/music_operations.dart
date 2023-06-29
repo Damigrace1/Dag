@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:dag/controllers/searchWidgetController.dart';
 import 'package:dag/models/music_model.dart';
 import 'package:dag/music/data/hive_store.dart';
 import 'package:dag/music/domain/song_model.dart';
 import 'package:dag/music/presentation/homescreen.dart';
+import 'package:dag/utils/enums.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_gif/flutter_gif.dart';
 import 'package:get/get.dart';
@@ -84,6 +87,7 @@ class MusicOperations {
         final String musicUrl = await getUrl(noUrlModel!.id!);
         MusicModel urlModel = MusicModel.attachUrl(noUrlModel, musicUrl);
         AudioSource audioSource = createAudioSource(urlModel);
+        print(urlModel.musicUrl);
         duration = await player.setAudioSource(audioSource);
       } else
       {
@@ -131,6 +135,15 @@ class MusicOperations {
           throw e;
         }
       }
+      switch(context.read<MusicProvider>().loopMode){
+        case PlayMode.all :  player.setLoopMode(LoopMode.all);
+        break;
+        case PlayMode.one :  player.setLoopMode(LoopMode.one);
+        break;
+        case PlayMode.off :  player.setLoopMode(LoopMode.off);
+        break;
+        default:   player.setLoopMode(LoopMode.off);
+      }
       player.play();
       context.read<MusicProvider>().endV = duration!;
       context.read<MusicProvider>().play = true;
@@ -154,8 +167,9 @@ class MusicOperations {
   nextSong() async {
     BuildContext context = homeKey.currentContext!;
     context.read<MusicProvider>().loading = true;
-    context.read<MusicProvider>().songIndex++;
-    if (!context.read<MusicProvider>().isLocalPlay) {
+    if(  context.read<MusicProvider>().loopMode != PlayMode.one)
+   { context.read<MusicProvider>().songIndex++;}
+    if (!context.read<MusicProvider>().isLocalPlay ) {
       await MusicOperations()
           .playSong(index: context.read<MusicProvider>().songIndex);
     } else {
@@ -167,7 +181,8 @@ class MusicOperations {
   previousSong() async {
     BuildContext context = homeKey.currentContext!;
     context.read<MusicProvider>().loading = true;
-    context.read<MusicProvider>().songIndex--;
+    if(  context.read<MusicProvider>().loopMode != PlayMode.one)
+ {   context.read<MusicProvider>().songIndex--;}
     if (!context.read<MusicProvider>().isLocalPlay) {
       await MusicOperations()
           .playSong(index: context.read<MusicProvider>().songIndex);
