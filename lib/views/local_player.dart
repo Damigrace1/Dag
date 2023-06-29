@@ -58,6 +58,7 @@ late TabController tabController;
     // TODO: implement dispose
   tabController.dispose();
   scrollController.dispose();
+  localMediaSearchCont.clear();
     super.dispose();
   }
   @override

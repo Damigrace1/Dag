@@ -1,3 +1,4 @@
+import 'package:dag/controllers/searchWidgetController.dart';
 import 'package:dag/models/music_model.dart';
 import 'package:dag/music/data/hive_store.dart';
 import 'package:dag/music/domain/song_model.dart';
@@ -29,165 +30,106 @@ class MusicOperations {
       return '';
     }
   }
+  void loadMusic(BuildContext context, FlutterGifController controller) async {
 
-  Map<String, dynamic> favMapWithoutMusicUrl(Favourite favourite) {
-    return {
-      'ytid': favourite.id,
-      'title': favourite.title,
-      'image': favourite.imgUrl,
-      'authur': favourite.authur,
-      'duration': favourite.duration
-    };
-  }
-
-  void loadSingleMusic(BuildContext context, FlutterGifController controller,
-      Map<String, dynamic> musicMap) async {
-    showLoader(controller, context);
-    final musicModel = MusicModel.fromJson(musicMap);
-    context.read<MusicProvider>().musicModelGroup = [musicModel];
     context.read<MusicProvider>().loading = true;
     context.read<MusicProvider>().inSession = false;
-    Navigator.pop(context);
+    context.read<MusicProvider>().isLocalPlay = false;
+
     Get.to(() => const SongDisplay());
   }
 
-  // void loadMultipleSongs(List<Favourite> songs) {
-  //   BuildContext? ctx = homeKey.currentContext;
-  //   ctx?.read<MusicProvider>().songGroup = songs;
-  //
-  //   ctx?.read<MusicProvider>().loading = true;
-  //   ctx?.read<MusicProvider>().inSession = false;
-  //   Get.to(() => const SongDisplay());
-  // }
-
   Future<void> saveToFavourites(
       BuildContext context,
-      FlutterGifController controller,
-      String musicId,
-      Map<String, dynamic> musicMap) async {
-    showLoader(controller, context);
-    final musicUrl = await getUrl(musicId);
-    final fav = FavBox.createFavourite(musicMap, musicUrl);
-    FavBox.addToFavourite(musicId, fav);
-    Navigator.pop(context);
+      MusicModel musicModel) async {
+    final fav = FavBox.createFavourite(musicModel);
+    FavBox.addToFavourite( fav);
+    context.read<MusicProvider>().favSongs.add(FavBox.createFavourite(
+       musicModel));
   }
 
   AudioSource createAudioSource(
-    Favourite music,
-  ) {
-    return AudioSource.uri(
-      Uri.parse(music.songUrl!),
-      tag: MediaItem(
-        // Specify a unique ID for each media item:
-        id: music.id!,
-        // Metadata to display in the notification:
-        album: 'Unknown',
-        title: music.title!,
-        artUri: Uri.parse(music.imgUrl!),
-      ),
-    );
-  }
-
-  AudioSource createAudioSourceTest(
     MusicModel music,
   ) {
     return AudioSource.uri(
       Uri.parse(music.musicUrl!),
       tag: MediaItem(
-        // Specify a unique ID for each media item:
         id: music.id!,
-        // Metadata to display in the notification:
-        album: 'Unknown',
+        album: '',
+        duration: music.duration??Duration(),
+        artist: music.author ==  music.title ? '' :  music.author??'',
         title: music.title!,
         artUri: Uri.parse(music.imgUrl!),
       ),
     );
   }
 
+
   Future playSong({int? index}) async {
-    // Another music url needs was generated because saved url does expire.
-    try {
-      BuildContext? context = homeKey.currentContext;
-      context!.read<MusicProvider>().endV = Duration.zero;
-      context.read<MusicProvider>().loading = true;
-      context.read<MusicProvider>().inSession = false;
-      context.read<MusicProvider>().sV = Duration.zero;
-      Favourite? favourite =
-          context.read<MusicProvider>().songGroup?.elementAt(index ?? 0);
-      final String musicUrl = await getUrl(favourite!.id!);
-      Map<String, dynamic> musicMap =
-          MusicOperations().favMapWithoutMusicUrl(favourite);
-      final fav = FavBox.createFavourite(musicMap, musicUrl);
-      AudioSource audioSource = createAudioSource(fav);
-      final duration = await player.setAudioSource(audioSource);
-
-      context.read<MusicProvider>().endV = duration!;
-      context.read<MusicProvider>().play = true;
-      context.read<MusicProvider>().loading = false;
-      player.play();
-      // positStream?.resume();
-      // bufStream?.resume();
-      context.read<MusicProvider>().isPlaying = true;
-      context.read<MusicProvider>().inSession = true;
-      AudioStreams().initStreams();
-    } catch (e) {
-      debugPrint('play error: $e');
-    }
-  }
-
-  Future playSongTest({int? index}) async {
     // Another music url needs will be generated because saved url does expire.
-    print(localMusic.length);
-    try {
+
       BuildContext? context = homeKey.currentContext;
       context!.read<MusicProvider>().endV = Duration.zero;
       context.read<MusicProvider>().loading = true;
-      context.read<MusicProvider>().inSession = false;
+
       context.read<MusicProvider>().sV = Duration.zero;
 
       final duration;
       if (!context.read<MusicProvider>().isLocalPlay) {
-        MusicModel? noUrlModel =
-        context.read<MusicProvider>().musicModelGroup?.elementAt(index ?? 0);
+         print('index:$index');
+        MusicModel? noUrlModel = context
+            .read<MusicProvider>()
+            .musicModelGroup
+            ?.elementAt(index!);
         final String musicUrl = await getUrl(noUrlModel!.id!);
         MusicModel urlModel = MusicModel.attachUrl(noUrlModel, musicUrl);
-        AudioSource audioSource = createAudioSourceTest(urlModel);
+        AudioSource audioSource = createAudioSource(urlModel);
         duration = await player.setAudioSource(audioSource);
-      } else {
+      } else
+      {
+        try {
+          debugPrint('isLocal');
+          List<MusicModel> musicModels = [];
+          localMusic.forEach((mus) {
+            MusicModel mMod = MusicModel(
+                musicUrl: mus.filePath,
+                author: mus.authorName ?? 'Unknown',
+                title: mus.trackName ?? mus.filePath!.split('/').last,
+                id: mus.filePath,
+                // imgUrl:'',
+                duration: Duration(seconds: mus.trackDuration!));
+            musicModels.add(mMod);
+          });
+          List<MusicModel> l1 = musicModels;
+          List<MusicModel> l3 =
+              l1.sublist(context.read<MusicProvider>().songIndex, l1.length);
+          List<MusicModel> l2 =
+              l1.sublist(0, context.read<MusicProvider>().songIndex);
+          List<MusicModel> newMusicModelList = l3 + l2;
+          context.read<MusicProvider>().songIndex = 0;
+          context.read<MusicProvider>().musicModelGroup = newMusicModelList;
 
-        List<AudioSource> audioSources = [];
-        localMusic.forEach((metadata) {
-          // context.read<MusicProvider>().musicModelGroup!.
-          //     add(
-          //   MusicModel(
-          //     author: metadata.authorName??'',
-          //     title: metadata.trackName ?? metadata.filePath!.split('/').last,
-          //     duration: Duration(seconds: metadata.trackDuration!),
-          //
-          //   )
-          // );
-
-          audioSources.add(
-            AudioSource.file(
-              metadata.filePath ?? '',
-              tag: MediaItem(
-                id: '',
-                album: metadata.albumName ?? 'Unknown',
-                title: metadata.trackName ?? metadata.filePath!.split('/').last,
-                artUri: metadata.albumArt != null ?
-                Uri.dataFromBytes(metadata.albumArt!.toList()) : null
+          List<AudioSource> audioSources = [];
+          newMusicModelList.forEach((newMusicModel) {
+            audioSources.add(
+              AudioSource.file(
+                newMusicModel.musicUrl ?? '',
+                tag: MediaItem(
+                  id: '',
+                  album: 'Unknown',
+                  title: newMusicModel.title ?? '',
+                  // artUri: metadata.albumArt != null ?
+                  // Uri.dataFromBytes(metadata.albumArt!.toList()) : null
+                ),
               ),
-            ),
-          );
-        });
-        List<AudioSource> l1 = audioSources;
-        List<AudioSource> l3 = l1.sublist(context.read<MusicProvider>().songIndex,
-            l1.length);
-        List<AudioSource> l2 = l1.sublist(0, index);
-        AudioSource audioSource = ConcatenatingAudioSource(children: l3 + l2);
-        duration = await player.setAudioSource(
-            audioSource
-        );
+            );
+          });
+
+          duration = await player
+              .setAudioSource(ConcatenatingAudioSource(children: audioSources));
+        } catch (e) {
+          throw e;
+        }
       }
       player.play();
       context.read<MusicProvider>().endV = duration!;
@@ -196,59 +138,29 @@ class MusicOperations {
       context.read<MusicProvider>().isPlaying = true;
       context.read<MusicProvider>().inSession = true;
       AudioStreams().initStreams();
-    } catch (e) {
-      debugPrint('play error: $e');
-    }
+
   }
 
-  Future playLocalSong({int? index}) async {
-    // Another music url needs was generated because saved url does expire.
-    try {
-      BuildContext? context = homeKey.currentContext;
-      context!.read<MusicProvider>().endV = Duration.zero;
-      context.read<MusicProvider>().loading = true;
-      context.read<MusicProvider>().inSession = false;
-      context.read<MusicProvider>().sV = Duration.zero;
-      Favourite? favourite =
-          context.read<MusicProvider>().songGroup?.elementAt(index ?? 0);
-      // player.stop();
-      final String musicUrl = await getUrl(favourite!.id!);
-      Map<String, dynamic> musicMap =
-          MusicOperations().favMapWithoutMusicUrl(favourite);
-      final fav = FavBox.createFavourite(musicMap, musicUrl);
-      AudioSource audioSource = createAudioSource(fav);
-      final duration = await player.setAudioSource(audioSource);
-
-      context.read<MusicProvider>().endV = duration!;
-      context.read<MusicProvider>().play = true;
-      context.read<MusicProvider>().loading = false;
-      player.play();
-      // positStream?.resume();
-      // bufStream?.resume();
-      context.read<MusicProvider>().isPlaying = true;
-      context.read<MusicProvider>().inSession = true;
-      AudioStreams().initStreams();
-    } catch (e) {
-      debugPrint('play error: $e');
-    }
-  }
-
-  loadPlayGroup(String authur) async {
+  Future <String> loadPlayGroup() async{
     BuildContext? context = homeKey.currentContext;
     List<MusicModel> music = [];
-    List musicMapList = await fetchSongsList(searchCont.text);
-    musicMapList.forEach((musicMap) {
+    searchResList.forEach((musicMap) {
       music.add(MusicModel.fromJson(musicMap));
     });
     context!.read<MusicProvider>().musicModelGroup = music;
+    return 'done';
   }
 
   nextSong() async {
     BuildContext context = homeKey.currentContext!;
     context.read<MusicProvider>().loading = true;
     context.read<MusicProvider>().songIndex++;
-    await MusicOperations()
-        .playSongTest(index: context.read<MusicProvider>().songIndex);
+    if (!context.read<MusicProvider>().isLocalPlay) {
+      await MusicOperations()
+          .playSong(index: context.read<MusicProvider>().songIndex);
+    } else {
+      player.seekToNext();
+    }
     context.read<MusicProvider>().loading = false;
   }
 
@@ -256,8 +168,42 @@ class MusicOperations {
     BuildContext context = homeKey.currentContext!;
     context.read<MusicProvider>().loading = true;
     context.read<MusicProvider>().songIndex--;
-    await MusicOperations()
-        .playSongTest(index: context.read<MusicProvider>().songIndex);
+    if (!context.read<MusicProvider>().isLocalPlay) {
+      await MusicOperations()
+          .playSong(index: context.read<MusicProvider>().songIndex);
+    } else {
+      player.seekToPrevious();
+    }
     context.read<MusicProvider>().loading = false;
+  }
+
+  static favMusicChecker(BuildContext context) {
+    Future.delayed(Duration.zero, () {
+      context.read<MusicProvider>().isFav = context
+          .read<MusicProvider>()
+          .favSongs
+          .any((testSong) =>
+              testSong.id ==
+              context
+                  .read<MusicProvider>()
+                  .musicModelGroup![context.read<MusicProvider>().songIndex]
+                  .id!);
+    });
+  }
+  static playRemoteSong(
+      List<Map<String, dynamic>> musicMap,
+      int index,
+      FlutterGifController controller
+      )async{
+    BuildContext context = homeKey.currentContext!;
+    SearchWidgetController.saveSearchToHist(
+        searchCont.text);
+    searchResList = musicMap;
+    context.read<MusicProvider>().isLocalPlay = false;
+    context.read<MusicProvider>().songIndex = index;
+    await MusicOperations().loadPlayGroup();
+    MusicOperations().loadMusic(
+        context,
+        controller);
   }
 }

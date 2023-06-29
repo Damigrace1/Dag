@@ -1,4 +1,5 @@
 import 'package:dag/main.dart';
+import 'package:dag/models/music_model.dart';
 import 'package:dag/music/presentation/homescreen.dart';
 import 'package:dag/provider/music.dart';
 import 'package:dag/value_notifiers.dart';
@@ -11,29 +12,27 @@ import '../utils/functions.dart';
 
 class FavBox {
   static Favourite createFavourite(
-      Map<String, dynamic> musicMap, String musicUrl) {
+      MusicModel musicModel) {
     return Favourite()
-      ..id = musicMap['ytid']
-      ..songUrl = musicUrl
-      ..title = formatTit(musicMap['title'])
-      ..imgUrl = musicMap['image']
-      ..authur = musicMap['authur']
-      ..duration = musicMap['duration'];
+      ..id = musicModel.id
+      ..title =musicModel.title
+      ..imgUrl = musicModel.imgUrl
+      ..authur = musicModel.author
+      ..duration = musicModel.duration;
   }
 
-  static addToFavourite(String musicId, Favourite fav) {
-    favBox?.put(musicId, fav);
+  static addToFavourite( Favourite fav) {
+    favBox?.put(fav.id, fav);
     showToast('Music added to Favourites');
   }
 
   static removeFromFavourite(String musicId) async{
 
     BuildContext? ctx = homeKey.currentContext;
-    ctx?.read<MusicProvider>().isFav = false ;
    await favBox?.delete(musicId);
     ctx?.read<MusicProvider>().
    favSongs.remove(musicId);
-   ctx?.read<MusicProvider>().songGroup?.remove(
+   ctx?.read<MusicProvider>().musicModelGroup?.removeAt(
      ctx.read<MusicProvider>().songIndex
    );
     showToast('Music Removed from Favourites');

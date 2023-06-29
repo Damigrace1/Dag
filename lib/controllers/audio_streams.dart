@@ -30,7 +30,6 @@ class AudioStreams{
           break;
         case ProcessingState.ready:
           context!.read<MusicProvider>().loading = false;
-          context.read<MusicProvider>().play = true;
           break;
         case ProcessingState.completed:
           MusicOperations().nextSong();
@@ -42,9 +41,10 @@ class AudioStreams{
     player.durationStream.listen((dur) {
       context!.read<MusicProvider>().endV = dur ?? const Duration();
     });
-    //  player.currentIndexStream.listen((index) async {
-    //   context!.read<MusicProvider>().songIndex = index!;
-    // });
+     player.currentIndexStream.listen((index) async {
+        if (context!.read<MusicProvider>().isLocalPlay )
+       context.read<MusicProvider>().songIndex = index!;
+    });
   }
 
 }

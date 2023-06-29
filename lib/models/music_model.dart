@@ -35,3 +35,25 @@ class MusicModel {
     );
   }
 }
+
+class MusicModelTest{
+  String? id;
+  String? title;
+  String? imgUrl;
+  String? author;
+  Duration? duration;
+  String? musicUrl;
+  MusicModelTest({
+    this.author,
+    this.title,
+    this.id,
+    this.imgUrl,
+    this.duration,
+    this.musicUrl
+  });
+}
+
+class Test{
+  String name;
+  Test({required this.name});
+}

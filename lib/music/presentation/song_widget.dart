@@ -28,8 +28,12 @@ class SongWidget extends StatelessWidget {
                 leading: CachedNetworkImage(
                   width: 50.w,
                   height: 50.h,
-                  imageUrl:  music.musicModelGroup!
-                  [music.songIndex].imgUrl??'',
+                  imageUrl:
+                  music.songIndex <  music.musicModelGroup!.length ?
+                  music.musicModelGroup!
+                  [music.songIndex].imgUrl??'':
+                  music.musicModelGroup!
+                  [0].imgUrl??'',
                   errorWidget: (context, url, error)=>Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: color.blackAcc),

@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dag/controllers/local_media.dart';
@@ -43,6 +44,7 @@ class _MusicTabState extends State<MusicTab> with SingleTickerProviderStateMixin
   }
   @override
   Widget build(BuildContext context) {
+
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -129,41 +131,13 @@ class _MusicTabState extends State<MusicTab> with SingleTickerProviderStateMixin
                               ],
                             ),
                             onTap: () async {
-                              showLoader(controller, context);
-                              List<MusicModel> musicModels = [];
-                              localMusic.forEach((mus) {
-                                musicModels.add(
-                                  MusicModel(
-                                      author: mus.authorName??'Unknown',
-                                      title: context
-                                          .read<MusicProvider>()
-                                          .localMusicList[index]
-                                          .trackName ??
-                                          context
-                                              .read<MusicProvider>()
-                                              .localMusicList[index]
-                                              .filePath!
-                                              .split('/')
-                                              .last,
-                                      id: '',
-                                     // imgUrl:'',
-                                      duration: Duration(
-                                        seconds: mus.trackDuration!
-                                      )
-                                  )
-                                );
-                              });
-                              List<MusicModel> l1 = musicModels;
-                              List<MusicModel> l3 = l1.sublist(index, l1.length);
-                              List<MusicModel> l2 = l1.sublist(0, index);
-                              context.read<MusicProvider>().musicModelGroup =
-                              l3 + l2;
-                              context.read<MusicProvider>().songIndex = index;
-                              //  await MusicOperations().playSong();
+                              context.read<MusicProvider>().songIndex = 0;
+                             int ind = localMusic.indexOf((context.read<MusicProvider>().localMusicList[index]));
+                              context.read<MusicProvider>().songIndex = ind;
+                              context.read<MusicProvider>().inSession = false;
                               context.read<MusicProvider>().isLocalPlay = true;
+                             Get.to(()=>SongDisplay());
 
-
-                              Get.to(()=>SongDisplay());
                             }));
                   },
                 )

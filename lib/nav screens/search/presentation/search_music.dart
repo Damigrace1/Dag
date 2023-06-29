@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dag/controllers/fav_box.dart';
 import 'package:dag/controllers/music_operations.dart';
 import 'package:dag/controllers/searchWidgetController.dart';
+import 'package:dag/models/music_model.dart';
 import 'package:dag/music/domain/song_model.dart';
 import 'package:dag/music/presentation/song_display.dart';
 import 'package:dag/provider/color.dart';
@@ -23,6 +24,7 @@ import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
+import '../../../configs/connectivity.dart';
 import '../../../controllers/rebuilders.dart';
 import '../../../main.dart';
 import '../../../music/data/hive_store.dart';
@@ -38,7 +40,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 final yt = YoutubeExplode();
-
+List<Map<String, dynamic>> searchResList = [];
 final searchPageKey = GlobalKey();
 
 class _SearchScreenState extends State<SearchScreen>
@@ -92,6 +94,12 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
+    print(context.read<MusicProvider>().songIndex);
+    if(context.read<MusicProvider>().searchHistWid.isEmpty){
+      context.read<MusicProvider>().searchHistWid.add(
+        SearchHistWidget(text: '')
+      );
+    }
     return Scaffold(
       key: searchPageKey,
       backgroundColor: Colors.black,
@@ -196,7 +204,7 @@ class _SearchScreenState extends State<SearchScreen>
 
           },
           body: SingleChildScrollView(
-          //  controller: scrollController,
+          
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -217,13 +225,13 @@ class _SearchScreenState extends State<SearchScreen>
                                 runSpacing: 10.0.h,
                                 children: <SearchHistWidget>[
                                   ...context.read<MusicProvider>().searchHistWid
-                                ]),
+                                ].reversed.take(6).toList()),
                           ),
                           Divider(),
                           Flexible(
                               flex: 9,
                               child: FutureBuilder(
-                                future: fetchSongsList(''),
+                                future: fetchSongsList(context.read<MusicProvider>().searchHistWid.reversed.first.text),
                                 builder: (context, d) {
                                   if (d.connectionState == ConnectionState.done) {
                                     return d.data != null
@@ -282,13 +290,14 @@ class _SearchScreenState extends State<SearchScreen>
                                                 children: [
                                                   IconButton(
                                                       onPressed: () async {
-                                                        MusicOperations()
-                                                            .saveToFavourites(
-                                                            context,
-                                                            controller,
-                                                            d.data![index]
-                                                            ['ytid'],
-                                                            d.data![index]);
+                                                        MusicOperations().saveToFavourites(context,
+                                                          MusicModel()
+                                                            ..id = d.data?[index]['ytid']
+                                                            ..title =  d.data?[index]['title']
+                                                            ..imgUrl =  d.data?[index]['image']
+                                                            ..author =  d.data?[index]['more_info']['singers']
+                                                            ..duration =  d.data?[index]['duration']
+                                                        );
                                                       },
                                                       icon: Icon(
                                                         Icons.favorite_border,
@@ -300,13 +309,7 @@ class _SearchScreenState extends State<SearchScreen>
                                                 ],
                                               ),
                                               onTap: () async {
-                                                SearchWidgetController
-                                                    .saveSearchToHist(
-                                                    searchCont.text);
-                                                MusicOperations().loadSingleMusic(
-                                                    context,
-                                                    controller,
-                                                    d.data![index]);
+                                                MusicOperations.playRemoteSong( d.data??[], index, controller);
                                               },
                                             ));
                                       },
@@ -399,13 +402,14 @@ class _SearchScreenState extends State<SearchScreen>
                                               children: [
                                                 IconButton(
                                                     onPressed: () async {
-                                                      MusicOperations()
-                                                          .saveToFavourites(
-                                                              context,
-                                                              controller,
-                                                              d.data![index]
-                                                                  ['ytid'],
-                                                              d.data![index]);
+                                                      MusicOperations().saveToFavourites(context,
+                                                          MusicModel()
+                                                            ..id = d.data?[index]['ytid']
+                                                            ..title =  d.data?[index]['title']
+                                                            ..imgUrl =  d.data?[index]['image']
+                                                            ..author =  d.data?[index]['more_info']['singers']
+                                                            ..duration =  d.data?[index]['duration']
+                                                      );
                                                     },
                                                     icon: Icon(
                                                       Icons.favorite_border,
@@ -417,13 +421,7 @@ class _SearchScreenState extends State<SearchScreen>
                                               ],
                                             ),
                                             onTap: () async {
-                                              SearchWidgetController
-                                                  .saveSearchToHist(
-                                                      searchCont.text);
-                                              MusicOperations().loadSingleMusic(
-                                                  context,
-                                                  controller,
-                                                  d.data![index]);
+                                              MusicOperations.playRemoteSong( d.data??[], index, controller);
                                             },
                                           ));
                                     },

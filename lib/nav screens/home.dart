@@ -149,7 +149,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
                   builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot)
                   {
                     if(snapshot.connectionState == ConnectionState.done){
-                      List suggMus = snapshot.data??[];
+                      List<Map<String, dynamic>>  suggMus = snapshot.data??[];
 
                       return
                         ListView.builder(
@@ -158,7 +158,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
                           itemCount: suggMus.length,
                           itemBuilder: (BuildContext context, int index) {
                             return suggestedMusic(
-                                suggMus[index]
+                                suggMus,
+                              index
                             );
                           },
                         );
@@ -208,14 +209,15 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
                   builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot)
                   {
                     if(snapshot.connectionState == ConnectionState.done){
-                      List suggMus = snapshot.data??[];
+                      List<Map<String, dynamic>> suggMus = snapshot.data??[];
                       return ListView.builder(
                           scrollDirection: Axis.horizontal,
                           shrinkWrap: true,
                           itemCount: suggMus.length,
                           itemBuilder: (BuildContext context, int index) {
                             return suggestedMusic(
-                                suggMus[index]
+                                suggMus,
+                              index
                             );
                           },
                         );
@@ -285,14 +287,15 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
               );
   }
   InkWell suggestedMusic(
-      Map<String, dynamic> song
+      List<Map<String, dynamic>> musicMap,
+      int index
       ) {
     return InkWell(
       onTap: ()async{
-        MusicOperations().loadSingleMusic(
+        MusicOperations.playRemoteSong( musicMap??[], index, controller);
+        MusicOperations().loadMusic(
             context,
-            controller,
-            song);
+            controller);
       },
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 15.w),
@@ -306,7 +309,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
               width: 125.w,
               height: 135.h,
               fit: BoxFit.cover,
-              imageUrl: song['image'].toString(),
+              imageUrl: musicMap[index]['image'].toString(),
               errorWidget: (context, url, error)=>Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: context.read<ColorProvider>().blackAcc),
@@ -324,7 +327,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
               ),
             ),
             SizedBox(height: 7.h,),
-            Text(song['title'],
+            Text(musicMap[index]['title'],
               overflow: TextOverflow.ellipsis,
               style: CustomTextStyle(fontSize: 12.sp),),
             SizedBox(height:4 .h,)
@@ -333,6 +336,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
       ),
     );
   }
+
   int browseItem = 0;
   TextButton browseText(
       int ind,

@@ -1,6 +1,7 @@
 import 'package:dag/music/presentation/homescreen.dart';
 import 'package:dag/onboarding/presentation/onboarding.dart';
 import 'package:dag/provider/registry.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -68,7 +69,11 @@ class MyApp extends StatelessWidget {
                 colorScheme: ColorScheme.fromSeed(seedColor: Color(0xffF9CE80)),
                 useMaterial3: true,
               ),
-              home: user?.get('isNew') == null ?  Onboarding()
+              home:
+              kIsWeb ?
+              const HomeScreen() :
+              user?.get('isNew') == null ?
+              Onboarding()
                   : const HomeScreen()
           )),
     );

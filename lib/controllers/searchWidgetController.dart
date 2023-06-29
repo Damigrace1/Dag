@@ -11,7 +11,7 @@ class SearchWidgetController {
   }
 
   static void saveSearchToHist(String searchString) {
-    if(!searchStringExist(searchString)!){
+    if(!searchStringExist(searchString)! && searchString != ''){
     searchBox?.add(searchString);
   }}
 
