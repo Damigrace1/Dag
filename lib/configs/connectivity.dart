@@ -34,7 +34,6 @@ class ConnectivityService {
                 backgroundColor: Colors.deepPurple,
               )) :
               notify = true;
-        print('Internet connection available');
       }
     });
   }

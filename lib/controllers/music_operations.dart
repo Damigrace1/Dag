@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:dag/controllers/searchWidgetController.dart';
 import 'package:dag/models/music_model.dart';
-import 'package:dag/music/data/hive_store.dart';
-import 'package:dag/music/domain/song_model.dart';
+
 import 'package:dag/music/presentation/homescreen.dart';
 import 'package:dag/utils/enums.dart';
 import 'package:flutter/cupertino.dart';
@@ -33,14 +32,13 @@ class MusicOperations {
       return '';
     }
   }
-  void loadMusic(BuildContext context, FlutterGifController controller) async {
 
-    context.read<MusicProvider>().loading = true;
-    context.read<MusicProvider>().inSession = false;
-    context.read<MusicProvider>().isLocalPlay = false;
-
-    Get.to(() => const SongDisplay());
-  }
+  // void loadMusic(BuildContext context, FlutterGifController controller) async {
+  //   context.read<MusicProvider>().loading = true;
+  //   context.read<MusicProvider>().inSession = false;
+  //   context.read<MusicProvider>().isLocalPlay = false;
+  //   Get.to(() => const SongDisplay());
+  // }
 
   Future<void> saveToFavourites(
       BuildContext context,
@@ -79,7 +77,6 @@ class MusicOperations {
 
       final duration;
       if (!context.read<MusicProvider>().isLocalPlay) {
-         print('index:$index');
         MusicModel? noUrlModel = context
             .read<MusicProvider>()
             .musicModelGroup
@@ -87,21 +84,19 @@ class MusicOperations {
         final String musicUrl = await getUrl(noUrlModel!.id!);
         MusicModel urlModel = MusicModel.attachUrl(noUrlModel, musicUrl);
         AudioSource audioSource = createAudioSource(urlModel);
-        print(urlModel.musicUrl);
         duration = await player.setAudioSource(audioSource);
       } else
       {
         try {
-          debugPrint('isLocal');
           List<MusicModel> musicModels = [];
           localMusic.forEach((mus) {
             MusicModel mMod = MusicModel(
-                musicUrl: mus.filePath,
-                author: mus.authorName ?? 'Unknown',
-                title: mus.trackName ?? mus.filePath!.split('/').last,
-                id: mus.filePath,
+                musicUrl: mus.data,
+                author: mus.composer ?? 'Unknown',
+                title: mus.title ?? '',
+                id: mus.data,
                 // imgUrl:'',
-                duration: Duration(seconds: mus.trackDuration!));
+                duration: Duration(seconds: mus.duration!));
             musicModels.add(mMod);
           });
           List<MusicModel> l1 = musicModels;
@@ -122,8 +117,6 @@ class MusicOperations {
                   id: '',
                   album: 'Unknown',
                   title: newMusicModel.title ?? '',
-                  // artUri: metadata.albumArt != null ?
-                  // Uri.dataFromBytes(metadata.albumArt!.toList()) : null
                 ),
               ),
             );
@@ -215,10 +208,6 @@ class MusicOperations {
         searchCont.text);
     searchResList = musicMap;
     context.read<MusicProvider>().isLocalPlay = false;
-    context.read<MusicProvider>().songIndex = index;
     await MusicOperations().loadPlayGroup();
-    MusicOperations().loadMusic(
-        context,
-        controller);
-  }
-}
+    loadMusic(index);
+}}

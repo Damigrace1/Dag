@@ -19,6 +19,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
+import '../controllers/music_operations.dart';
 import '../music/domain/song_model.dart';
 import '../music/presentation/song_display.dart';
 import '../nav screens/search/presentation/search_music.dart';
@@ -162,6 +163,27 @@ List<Favourite> getFavSongs() {
   return allFavs;
 }
 
+void loadMusic (int ind){
+  BuildContext context = homeKey.currentContext!;
+  if(context.read<MusicProvider>().isPlayerActive)
+    player.dispose();
+  context.read<MusicProvider>().songIndex = ind;
+  context.read<MusicProvider>().inSession = false;
+  context.read<MusicProvider>().isPlayerActive = true;
+  player = AudioPlayer();
+  if (!context.read<MusicProvider>().inSession) {
+    Future.delayed(Duration.zero, () {
+      MusicOperations()
+          .playSong(index: context.read<MusicProvider>().songIndex);
+      // if (context.read<MusicProvider>().musicModelGroup!.length == 1)
+      //   MusicOperations().loadPlayGroup();
+    });
+    context.read<MusicProvider>().inSession = true;
+  }
+  MusicOperations.favMusicChecker(context);
+}
+
+
 void loadM() async {
   BuildContext ctx = homeKey.currentContext!;
   ctx.read<MusicProvider>().isPlaying = true;
@@ -180,7 +202,6 @@ AudioStreams().initStreams();
 loadSongs(BuildContext ctx) async {
   List<AudioSource> aS = [];
   for (var song in ctx.read<MusicProvider>().songGroup!) {
-    print(song.songUrl);
     AudioSource a = AudioSource.uri(
       Uri.parse(song.songUrl!),
       tag: MediaItem(

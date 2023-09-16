@@ -1,7 +1,7 @@
 import 'package:dag/utils/functions.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
-class SongModel {
+class RemoteSongModel {
   final String? id;
   final String? title;
   final String? imgUrl;
@@ -9,7 +9,7 @@ class SongModel {
   final Duration? dur;
   final String? artiste;
 
-  SongModel({
+  RemoteSongModel({
     this.artiste,
      this.id,
      this.dur,

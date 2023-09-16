@@ -36,7 +36,7 @@ class SongDisplay extends StatefulWidget {
   State<SongDisplay> createState() => _SongDisplayState();
 }
 
-final player = AudioPlayer();
+late  AudioPlayer player ;
 StreamSubscription? positStream;
 StreamSubscription? bufStream;
 
@@ -48,15 +48,15 @@ class _SongDisplayState extends State<SongDisplay>
     // TODO: implement initState
     super.initState();
     controller = FlutterGifController(vsync: this);
-    if (mounted & !context.read<MusicProvider>().inSession) {
-      Future.delayed(Duration.zero, () {
-        MusicOperations()
-            .playSong(index: context.read<MusicProvider>().songIndex);
-        // if (context.read<MusicProvider>().musicModelGroup!.length == 1)
-        //   MusicOperations().loadPlayGroup();
-      });
-    }
-    MusicOperations.favMusicChecker(context);
+    // if (mounted & !context.read<MusicProvider>().inSession) {
+    //   Future.delayed(Duration.zero, () {
+    //     MusicOperations()
+    //         .playSong(index: context.read<MusicProvider>().songIndex);
+    //     // if (context.read<MusicProvider>().musicModelGroup!.length == 1)
+    //     //   MusicOperations().loadPlayGroup();
+    //   });
+    // }
+    // MusicOperations.favMusicChecker(context);
   }
 
   @override
@@ -95,23 +95,26 @@ class _SongDisplayState extends State<SongDisplay>
             SizedBox(
               height: 20.h,
             ),
-            CachedNetworkImage(
-              fit: BoxFit.cover,
-              width: 250.w,
-              height: 300.h,
-              imageUrl: music.musicModelGroup?[music.songIndex].imgUrl ?? '',
-              errorWidget: (context, url, error) => Container(
+            Hero(
+              tag: 'hero',
+              child: CachedNetworkImage(
+                fit: BoxFit.cover,
+                width: 250.w,
+                height: 300.h,
+                imageUrl: music.musicModelGroup?[music.songIndex].imgUrl ?? '',
+                errorWidget: (context, url, error) => Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: color.blackAcc),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Image.asset('images/mus_pla.jpg')),
+                imageBuilder: (context, imageProvider) => DecoratedBox(
                   decoration: BoxDecoration(
-                    border: Border.all(color: color.blackAcc),
                     borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Image.asset('images/mus_pla.jpg')),
-              imageBuilder: (context, imageProvider) => DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  image: DecorationImage(
-                    image: imageProvider,
-                    centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
+                    image: DecorationImage(
+                      image: imageProvider,
+                      centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
+                    ),
                   ),
                 ),
               ),

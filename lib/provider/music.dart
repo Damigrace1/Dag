@@ -5,6 +5,7 @@ import 'package:dag/music/domain/song_model.dart';
 import 'package:dag/utils/enums.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 import '../views/searchHistWidget.dart';
 bool notify = false;
@@ -78,6 +79,14 @@ class MusicProvider  extends ChangeNotifier{
     _inSession = val;
     notifyListeners();
   }
+
+  bool _isPlayerActive = false;
+  bool get isPlayerActive => _isPlayerActive;
+  set isPlayerActive (bool val){
+    _isPlayerActive = val;
+    notifyListeners();
+  }
+
   bool _isPlaying = false;
   bool get isPlaying => _isPlaying;
   set isPlaying (bool val){
@@ -139,9 +148,9 @@ class MusicProvider  extends ChangeNotifier{
     notifyListeners();
   }
 
-  List<Metadata> _localMusicList = [];
-  List<Metadata> get localMusicList => _localMusicList;
-  set localMusicList (List<Metadata> val){
+  List<SongModel> _localMusicList = [];
+  List<SongModel> get localMusicList => _localMusicList;
+  set localMusicList (List<SongModel> val){
     _localMusicList = val;
     notifyListeners();
   }

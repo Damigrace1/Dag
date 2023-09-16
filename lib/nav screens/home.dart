@@ -21,6 +21,7 @@ import '../music/data/hive_store.dart';
 import '../music/presentation/song_display.dart';
 import '../provider/music.dart';
 import '../utils/custom_textstyles.dart';
+import '../views/widgets.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -100,18 +101,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
         //   ),
         // ],
       ),
-      persistentFooterButtons: [
-        Consumer<MusicProvider>(
-            builder: (context,music,child){
-              if(music.isPlaying) {
-                return const SongWidget();
-              }
-              else {
-                return const SizedBox();
-              }
-
-            })
-      ],
       body: Padding(
         padding:  EdgeInsets.symmetric(horizontal: 15.w),
         child: SingleChildScrollView(
@@ -159,7 +148,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
                           itemBuilder: (BuildContext context, int index) {
                             return suggestedMusic(
                                 suggMus,
-                              index
+                              index,
+                              controller
                             );
                           },
                         );
@@ -217,7 +207,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
                           itemBuilder: (BuildContext context, int index) {
                             return suggestedMusic(
                                 suggMus,
-                              index
+                              index,
+                              controller
                             );
                           },
                         );
@@ -286,56 +277,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
                 ],
               );
   }
-  InkWell suggestedMusic(
-      List<Map<String, dynamic>> musicMap,
-      int index
-      ) {
-    return InkWell(
-      onTap: ()async{
-        MusicOperations.playRemoteSong( musicMap??[], index, controller);
-        MusicOperations().loadMusic(
-            context,
-            controller);
-      },
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 15.w),
-        width: 125.w,
-       // height: 155.h,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CachedNetworkImage(
-              width: 125.w,
-              height: 135.h,
-              fit: BoxFit.cover,
-              imageUrl: musicMap[index]['image'].toString(),
-              errorWidget: (context, url, error)=>Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: context.read<ColorProvider>().blackAcc),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Image.asset('images/mus_pla.jpg')),
-              imageBuilder: (context, imageProvider) => DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  image: DecorationImage(
-                    image: imageProvider,
-                    centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 7.h,),
-            Text(musicMap[index]['title'],
-              overflow: TextOverflow.ellipsis,
-              style: CustomTextStyle(fontSize: 12.sp),),
-            SizedBox(height:4 .h,)
-          ],
-        ),
-      ),
-    );
-  }
+
 
   int browseItem = 0;
   TextButton browseText(

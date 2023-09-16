@@ -46,7 +46,7 @@ final searchPageKey = GlobalKey();
 class _SearchScreenState extends State<SearchScreen>
     with SingleTickerProviderStateMixin {
   // List<Map<String, dynamic>>? songs;
-  void listenTo() {
+  void listenTo(TextEditingController controller) {
     showToast('Speak to search now');
     context.read<MusicProvider>().rec = true;
     stt.listen(
@@ -54,7 +54,7 @@ class _SearchScreenState extends State<SearchScreen>
               if (res.finalResult)
                 {
                   print(res.recognizedWords),
-                  searchCont.text = res.recognizedWords,
+                  controller.text = res.recognizedWords,
                   setState(() {})
                 }
             },
@@ -69,11 +69,18 @@ class _SearchScreenState extends State<SearchScreen>
     rebuildSearchMusicPage = rebuild;
     super.initState();
     controller = FlutterGifController(vsync: this);
+
     Future.delayed(Duration.zero, () {
       SearchWidgetController.retrieveSearchList();
       setState(() {});
     });
-    //scrollController.addListener(_scrollListener);
+    _scrollController.addListener((){
+      if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent ){
+        setState(() {
+          showAll = false;
+        });
+      }
+    });
   }
 
   @override
@@ -86,12 +93,12 @@ class _SearchScreenState extends State<SearchScreen>
     super.dispose();
   }
 
-  ScrollController scrollController = ScrollController();
+  ScrollController _scrollController = ScrollController();
 
   rebuild() {
     setState(() {});
   }
-
+  bool showAll = false;
   @override
   Widget build(BuildContext context) {
     // print(context.read<MusicProvider>().songIndex);
@@ -103,59 +110,57 @@ class _SearchScreenState extends State<SearchScreen>
     return Scaffold(
       key: searchPageKey,
       backgroundColor: Colors.black,
-      persistentFooterButtons: [
-        Consumer<MusicProvider>(builder: (context, music, child) {
-          if (music.isPlaying) {
-            return const SongWidget();
-          } else {
-            return const SizedBox();
-          }
-        })
-      ],
       body: SafeArea(
         child: NestedScrollView(
-          controller: scrollController,
+          controller: _scrollController,
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled)
           {
             return [
               SliverAppBar(
-                backgroundColor: context.read<ColorProvider>().blackAcc,
+                backgroundColor: Colors.black,
                 title: Center(
-                  child: Stack(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
                     children: [
-                      Container(
-                        width: 339.w,
-                        height: 50.h,
-                        decoration: BoxDecoration(
-                          border: Border.all(width: 1, color: context.read<ColorProvider>().blackAcc),
-                          borderRadius: BorderRadius.circular(5.w),
-                        ),
+                      SizedBox(
+                        width: 10.w,
                       ),
-                      Positioned.fill(
-                          child: Row(
+                      Container(
+                        height: 45.h,
+                        width: 340.w,
+                        child: TextFormField(
+                          autofocus: false,
+                          onChanged: (val) {
+                            if (val.length == 0) {
+                              SearchWidgetController.retrieveSearchList();
+                            }
+                            setState(() {});
+                          },
+                          readOnly: false,
+                          style: CustomTextStyle(color: Colors.white),
+                          controller: searchCont,
+                          decoration: InputDecoration(
+                              hintText: 'Start searching',
+                              hintStyle: CustomTextStyle(
+                                color: Colors.grey,
+                              ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Colors.white54,
+                            ),
+                          ),
+                            focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: context.read<ColorProvider>().primaryCol,
+                            ),
+                          ),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              SizedBox(
-                                width: 10.w,
-                              ),
-                              Expanded(
-                                child: TextField(
-                                  autofocus: false,
-                                  onChanged: (val) {
-                                    if (val.length == 0) {
-                                      SearchWidgetController.retrieveSearchList();
-                                    }
-                                    setState(() {});
-                                  },
-                                  readOnly: false,
-                                  style: CustomTextStyle(color: Colors.white),
-                                  controller: searchCont,
-                                  decoration: InputDecoration.collapsed(
-                                      hintText: 'Start searching',
-                                      hintStyle: CustomTextStyle(
-                                        color: Colors.grey,
-                                      )),
-                                ),
-                              ),
                               Consumer<MusicProvider>(
                                   builder: (context, music, child) {
                                     return AvatarGlow(
@@ -166,31 +171,26 @@ class _SearchScreenState extends State<SearchScreen>
                                         animate: music.rec,
                                         showTwoGlows: true,
                                         repeatPauseDuration: Duration(milliseconds: 100),
-                                        child: CircleAvatar(
-                                          radius: 15.r,
-                                          backgroundColor: Colors.grey,
-                                          child: InkWell(
-                                              onTap: () async {
-                                                listenTo();
-                                              },
-                                              child: Icon(
-                                                Icons.mic,
-                                                size: 20.sp,
-                                              )),
-                                        ));
+                                        child: InkWell(
+                                            onTap: () async {
+                                              listenTo(searchCont);
+                                            },
+                                            child: Icon(
+                                              Icons.mic,
+                                              color: Colors.green,
+                                              size: 20.sp,
+                                            )));
                                   }),
-                              IconButton(
-                                onPressed: () {
-                                  searchCont.text = '';
-                                  setState(() {});
-                                },
-                                icon: Icon(Icons.clear, color: Colors.grey),
-                              ),
-                              SizedBox(
-                                width: 10.w,
-                              ),
                             ],
-                          ))
+                          )
+                          ),
+
+                        ),
+                      ),
+
+                      SizedBox(
+                        width: 10.w,
+                      ),
                     ],
                   ),
                 ),
@@ -208,144 +208,158 @@ class _SearchScreenState extends State<SearchScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  height: 20.h,
-                ),
                 searchCont.text.isEmpty
-                    ? Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            height: 20.h,
-                          ),
-                          Flexible(
-                            flex: 3,
-                            child: Wrap(
-                                spacing: 8.0.w,
-                                runSpacing: 10.0.h,
-                                children: <SearchHistWidget>[
-                                  ...context.read<MusicProvider>().searchHistWid
-                                ].reversed.take(6).toList()),
-                          ),
-                          Divider(),
-                          Flexible(
-                              flex: 9,
-                              child: FutureBuilder(
-                                future: fetchSongsList(
-                                    context.read<MusicProvider>().searchHistWid.isNotEmpty ?
-                                    context.read<MusicProvider>().searchHistWid.reversed.first.text :
-                                        ''
-                                ),
-                                builder: (context, d) {
-                                  if (d.connectionState == ConnectionState.done) {
-                                    return d.data != null
-                                        ? ListView.builder(
-                                      shrinkWrap: true,
-                                      addAutomaticKeepAlives: false,
-                                      addRepaintBoundaries: false,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: d.data?.length,
-                                      itemBuilder: (BuildContext ctxt, int index) {
-                                        return Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 5, bottom: 5),
-                                            child: ListTile(
-                                              leading: CachedNetworkImage(
-                                                width: 60.w,
-                                                height: 60.h,
-                                                imageUrl: d.data![index]
-                                                ['lowResImage']
-                                                    .toString(),
-                                                errorWidget: (context, url, error) {
-                                                  return CachedImageErrorWidget();
-                                                },
-                                                imageBuilder:
-                                                    (context, imageProvider) =>
-                                                    DecoratedBox(
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                        BorderRadius.circular(12),
-                                                        image: DecorationImage(
-                                                          image: imageProvider,
-                                                          centerSlice:
-                                                          const Rect.fromLTRB(
-                                                              1, 1, 1, 1),
+                    ? Stack(
+                      children: [
+                        Column(
+
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                height: 5.h,
+                              ),
+                              Flexible(
+                                flex: 3,
+                                child: Wrap(
+                                    spacing: 8.0.w,
+                                    runSpacing: 10.0.h,
+                                    children:
+                                        showAll ?
+                                        context.read<MusicProvider>().searchHistWid
+                                            .reversed.toList() :
+                                      context.read<MusicProvider>().searchHistWid
+                                    .reversed.take(4).toList()),
+                              ),
+                            //  Divider(),
+                              Flexible(
+                                  flex: 9,
+                                  child: FutureBuilder(
+                                    future: fetchSongsList(
+                                        context.read<MusicProvider>().searchHistWid.isNotEmpty ?
+                                        context.read<MusicProvider>().searchHistWid.reversed.first.text :
+                                            ''
+                                    ),
+                                    builder: (context, d) {
+                                      if (d.connectionState == ConnectionState.done) {
+                                        return d.data != null
+                                            ? ListView.builder(
+                                          shrinkWrap: true,
+                                          addAutomaticKeepAlives: false,
+                                          addRepaintBoundaries: false,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          itemCount: d.data?.length,
+                                          itemBuilder: (BuildContext ctxt, int index) {
+                                            return Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 5, bottom: 5),
+                                                child: ListTile(
+                                                  leading: CachedNetworkImage(
+                                                    width: 60.w,
+                                                    height: 60.h,
+                                                    imageUrl: d.data![index]
+                                                    ['lowResImage']
+                                                        .toString(),
+                                                    errorWidget: (context, url, error) {
+                                                      return CachedImageErrorWidget();
+                                                    },
+                                                    imageBuilder:
+                                                        (context, imageProvider) =>
+                                                        DecoratedBox(
+                                                          decoration: BoxDecoration(
+                                                            borderRadius:
+                                                            BorderRadius.circular(12),
+                                                            image: DecorationImage(
+                                                              image: imageProvider,
+                                                              centerSlice:
+                                                              const Rect.fromLTRB(
+                                                                  1, 1, 1, 1),
+                                                            ),
+                                                          ),
                                                         ),
-                                                      ),
-                                                    ),
+                                                  ),
+                                                  title: Text(
+                                                    formatTit(d.data![index]['title']),
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: CustomTextStyle(
+                                                        fontSize: 15.sp,
+                                                        color: Colors.white),
+                                                  ),
+                                                  subtitle: Text(
+                                                    formatTit(d.data![index]['authur']),
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: CustomTextStyle(
+                                                        fontWeight: FontWeight.w300,
+                                                        fontSize: 13.sp,
+                                                        color: Colors.grey),
+                                                  ),
+                                                  trailing: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      IconButton(
+                                                          onPressed: () async {
+                                                            MusicOperations().saveToFavourites(context,
+                                                              MusicModel()
+                                                                ..id = d.data?[index]['ytid']
+                                                                ..title =  d.data?[index]['title']
+                                                                ..imgUrl =  d.data?[index]['image']
+                                                                ..author =  d.data?[index]['more_info']['singers']
+                                                                ..duration =  d.data?[index]['duration']
+                                                            );
+                                                          },
+                                                          icon: Icon(
+                                                            Icons.favorite_border,
+                                                            size: 25.sp,
+                                                            color: context
+                                                                .read<ColorProvider>()
+                                                                .origWhite,
+                                                          )),
+                                                    ],
+                                                  ),
+                                                  onTap: () async {
+                                                    MusicOperations.playRemoteSong( d.data??[], index, controller);
+                                                  },
+                                                ));
+                                          },
+                                        )
+                                            : Column(
+                                          children: [
+                                            SizedBox(
+                                              height: 200.h,
+                                            ),
+                                            Center(
+                                              child: Text(
+                                                'No results found! 😔',
+                                                style:
+                                                CustomTextStyle(color: Colors.grey),
                                               ),
-                                              title: Text(
-                                                formatTit(d.data![index]['title']),
-                                                overflow: TextOverflow.ellipsis,
-                                                style: CustomTextStyle(
-                                                    fontSize: 15.sp,
-                                                    color: Colors.white),
-                                              ),
-                                              subtitle: Text(
-                                                formatTit(d.data![index]['authur']),
-                                                overflow: TextOverflow.ellipsis,
-                                                style: CustomTextStyle(
-                                                    fontWeight: FontWeight.w300,
-                                                    fontSize: 13.sp,
-                                                    color: Colors.grey),
-                                              ),
-                                              trailing: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  IconButton(
-                                                      onPressed: () async {
-                                                        MusicOperations().saveToFavourites(context,
-                                                          MusicModel()
-                                                            ..id = d.data?[index]['ytid']
-                                                            ..title =  d.data?[index]['title']
-                                                            ..imgUrl =  d.data?[index]['image']
-                                                            ..author =  d.data?[index]['more_info']['singers']
-                                                            ..duration =  d.data?[index]['duration']
-                                                        );
-                                                      },
-                                                      icon: Icon(
-                                                        Icons.favorite_border,
-                                                        size: 25.sp,
-                                                        color: context
-                                                            .read<ColorProvider>()
-                                                            .origWhite,
-                                                      )),
-                                                ],
-                                              ),
-                                              onTap: () async {
-                                                MusicOperations.playRemoteSong( d.data??[], index, controller);
-                                              },
-                                            ));
-                                      },
-                                    )
-                                        : Column(
-                                      children: [
-                                        SizedBox(
-                                          height: 200.h,
-                                        ),
-                                        Center(
-                                          child: Text(
-                                            'No results found! 😔',
-                                            style:
-                                            CustomTextStyle(color: Colors.grey),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  } else {
-                                    return Column(
-                                      children: [
-                                        SizedBox(
-                                          height: 200.h,
-                                        ),
-                                        const CircularProgressIndicator.adaptive(),
-                                      ],
-                                    );
-                                  }
-                                },
-                              ))
-                        ],
-                      )
+                                            ),
+                                          ],
+                                        );
+                                      } else {
+                                        return Column(
+                                          children: [
+                                            SizedBox(
+                                              height: 200.h,
+                                            ),
+                                            const CircularProgressIndicator.adaptive(),
+                                          ],
+                                        );
+                                      }
+                                    },
+                                  ))
+                            ],
+                          ),
+                        if( context.read<MusicProvider>().searchHistWid.length == 4)
+                        Positioned(
+                            top: showAll?null :50.h,
+                            right: 0.w,
+                            child: TextButton(onPressed: (){
+                              setState(() {
+                                showAll = true;
+                              });
+                            }, child: Text(showAll ?'': 'See more...',style: TextStyle(color: Colors.green),)))
+                      ],
+                    )
                     : FutureBuilder(
                         future: fetchSongsList(searchCont.text),
                         builder: (context, d) {

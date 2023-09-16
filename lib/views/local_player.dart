@@ -10,15 +10,19 @@ import 'package:dag/views/video_tab.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'dart:io';
 import '../controllers/local_media.dart';
+import '../main.dart';
 import '../music/presentation/song_widget.dart';
 import '../provider/color.dart';
 import '../provider/music.dart';
@@ -37,168 +41,156 @@ class LocalPlayer extends StatefulWidget {
 
 TextEditingController localMediaSearchCont = TextEditingController();
 
-void checkLocalMusicLoadState() async {
-  while (localMedia.isEmpty) {
-    await Future.delayed(Duration(seconds: 1));
-  }
-  print(localMedia.length);
-  Future.delayed(Duration.zero,(){
-    homeKey.currentContext!.read<MusicProvider>().localMusicList =  localMusic;
-    homeKey.currentContext!.read<MusicProvider>().localVideoList =  localVideo;
-  });
-
-  // setState(() {});
-}
+// void checkLocalMusicLoadState() async {
+//   while (localMedia.isEmpty) {
+//     await Future.delayed(Duration(seconds: 1));
+//   }
+//   Future.delayed(Duration.zero,(){
+//     homeKey.currentContext!.read<MusicProvider>().localMusicList =  localMusic;
+//    // homeKey.currentContext!.read<MusicProvider>().localVideoList =  localVideo;
+//   });
+//
+//   // setState(() {});
+// }
 class _LocalPlayerState extends State<LocalPlayer> with SingleTickerProviderStateMixin {
-  ScrollController scrollController = ScrollController();
-late TabController tabController;
 
 @override
   void dispose() {
     // TODO: implement dispose
-  tabController.dispose();
-  scrollController.dispose();
   localMediaSearchCont.clear();
     super.dispose();
   }
+
+void listenTo(TextEditingController controller) {
+  showToast('Speak to search now');
+  context.read<MusicProvider>().rec = true;
+  stt.listen(
+      onResult: (res) => {
+        if (res.finalResult)
+          {
+            print(res.recognizedWords),
+            controller.text = res.recognizedWords,
+            setState(() {})
+          }
+      },
+      listenMode: ListenMode.dictation);
+  context.read<MusicProvider>().rec = false;
+}
+
   @override
   void initState() {
     // TODO: implement initState
-    checkLocalMusicLoadState();
-    tabController =TabController(length: 2, vsync: this);
-    super.initState();
-  }
-
+    super.initState();}
+ScrollController _scrollController2 = ScrollController();
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: context.read<ColorProvider>().blackAcc,
-        title: Center(
-          child: Stack(
-            children: [
-              Container(
-                width: 339.w,
-                height: 50.h,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                      width: 10, color: context.read<ColorProvider>().blackAcc),
-                  borderRadius: BorderRadius.circular(5.w),
-                ),
-              ),
-              Positioned.fill(
-                  child: Row(
-                children: [
-                  SizedBox(
-                    width: 10.w,
-                  ),
-                  Expanded(
-                    child: TextField(
-                      autofocus: false,
-                      onChanged: (val) {
-                        print(val);
-                        if (val.length == 0) {
-                          context.read<MusicProvider>().localVideoList = localVideo;
-                          context.read<MusicProvider>().localMusicList = localMusic;
-                        }
-                       else{
-                          tabController.index == 0 ?
-                          LocalMedia().searchMusic(val) :
-                          LocalMedia().searchVideo(val);
-                        }
-
-                      },
-                      readOnly: false,
-                      style: CustomTextStyle(color: Colors.white),
-                      controller: localMediaSearchCont,
-                      decoration: InputDecoration.collapsed(
-                          hintText: 'Start searching',
-                          hintStyle: CustomTextStyle(
-                            color: Colors.grey,
-                          )),
-                    ),
-                  ),
-                  Consumer<MusicProvider>(builder: (context, music, child) {
-                    return AvatarGlow(
-                        glowColor: Colors.green,
-                        endRadius: 20.r,
-                        duration: Duration(milliseconds: 2000),
-                        repeat: true,
-                        animate: music.rec,
-                        showTwoGlows: true,
-                        repeatPauseDuration: Duration(milliseconds: 100),
-                        child: CircleAvatar(
-                          radius: 15.r,
-                          backgroundColor: Colors.grey,
-                          child: InkWell(
-                              onTap: () async {},
-                              child: Icon(
-                                Icons.mic,
-                                size: 20.sp,
-                              )),
-                        ));
-                  }),
-                  IconButton(
-                    onPressed: () {
-                      localMediaSearchCont.clear();
-                      context.read<MusicProvider>().localVideoList = localVideo;
-                    },
-                    icon: Icon(Icons.clear, color: Colors.grey),
-                  ),
-                  SizedBox(
-                    width: 10.w,
-                  ),
-                ],
-              ))
-            ],
-          ),
-        ),
-        centerTitle: true,
-        leadingWidth: 0,
-        titleSpacing: 0,
-      ),
       backgroundColor: Colors.black,
-      persistentFooterButtons: [
-        Consumer<MusicProvider>(builder: (context, music, child) {
-          if (music.isPlaying) {
-            return const SongWidget();
-          } else {
-            return const SizedBox();
-          }
-        })
-      ],
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TabBar(
-                    controller: tabController,
-                    indicatorWeight: 3,
-                      dividerColor:Colors.grey,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      labelColor: context.read<ColorProvider>().primaryCol.withAlpha(250),
-                      indicatorColor: context.read<ColorProvider>().primaryCol.withAlpha(250),
-                      tabs: [
-                        Tab(text: 'Music'),
-                    Tab(text: 'Videos'),
+        child: NestedScrollView(
+          controller: _scrollController2,
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled)
+          {
+            return [
+              SliverAppBar(
+                backgroundColor: Colors.black,
+                title: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 10.w,
+                      ),
+                      SizedBox(
+                        height: 45.h,
+                        width: 340.w,
+                        child: TextFormField(
+                          autofocus: false,
+                          onChanged: (val) {
+                            if (val.length == 0) {
+                              //  context.read<MusicProvider>().localVideoList = localVideo;
+                              context.read<MusicProvider>().localMusicList;
+                            }
+                            else{
+                              //tabController.index == 0 ?
+                              LocalMedia().searchMusic(val) ;
+                              //  LocalMedia().searchVideo(val);
+                            }
 
-                  ]),
-                  Expanded(
-                    child: TabBarView(
-                      controller: tabController,
-                        children: [
-                      MusicTab(),
-                      VideoTab()]),
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
+                          },
+                          readOnly: false,
+                          style: CustomTextStyle(color: Colors.white),
+                          controller: localMediaSearchCont,
+                          decoration: InputDecoration(
+                              hintText: 'Start searching',
+                              hintStyle: CustomTextStyle(
+                                color: Colors.grey,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.r),
+                                borderSide: BorderSide(
+                                  width: 2,
+                                  color: Colors.white54,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.r),
+                                borderSide: BorderSide(
+                                  width: 2,
+                                  color: context.read<ColorProvider>().primaryCol,
+                                ),
+                              ),
+                              suffixIcon: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Consumer<MusicProvider>(
+                                      builder: (context, music, child) {
+                                        return AvatarGlow(
+                                            glowColor: Colors.green,
+                                            endRadius: 20.r,
+                                            duration: Duration(milliseconds: 2000),
+                                            repeat: true,
+                                            animate: music.rec,
+                                            showTwoGlows: true,
+                                            repeatPauseDuration: Duration(milliseconds: 100),
+                                            child: InkWell(
+                                                onTap: () async {
+                                                  listenTo(localMediaSearchCont);
+                                                },
+                                                child: Icon(
+                                                  Icons.mic,
+                                                  color: Colors.green,
+                                                  size: 20.sp,
+                                                )));
+                                      }),
+                                ],
+                              )
+                          ),
+
+                        ),
+                      ),
+
+                      SizedBox(
+                        width: 10.w,
+                      ),
+                    ],
+                  ),
+                ),
+                floating: true,
+                centerTitle: true,
+                leadingWidth: 0,
+                titleSpacing: 0,
+                snap: true,
+              )
+            ];
+
+          },
+          body: SingleChildScrollView(
+
+            child: MusicTab(),
+          ),
+        )
       ),
     );
   }

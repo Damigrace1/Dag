@@ -19,20 +19,21 @@ class SearchHistWidget extends StatelessWidget {
         rebuildSearchMusicPage();
       },
       child: Container(
-  //    height: 30.h,
-        //width: 80.w,`
+    // height: 30.h,
+        width: 100.w,
         decoration: BoxDecoration(
           color: context.read<ColorProvider>().blackAcc,
-          borderRadius: BorderRadius.circular(15.w),
+          borderRadius: BorderRadius.circular(5.r),
         ),
         child: IntrinsicWidth(
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(text,
-              overflow: TextOverflow.ellipsis,
+              child: Text(
+                text,
+              overflow: TextOverflow.fade,
               maxLines: 1,
-              style: CustomTextStyle(color: context.read<ColorProvider>().primaryCol,fontSize: 15.sp),),
+              style: CustomTextStyle(color: Colors.white,fontSize: 15.sp),),
             ),
           ),
         ),

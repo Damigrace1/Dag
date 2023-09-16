@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dag/controllers/music_operations.dart';
 import 'package:dag/models/music_model.dart';
@@ -11,6 +13,7 @@ import 'package:flutter_gif/flutter_gif.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
 import '../controllers/fav_box.dart';
@@ -190,10 +193,7 @@ class _LibraryState extends State<Library>with SingleTickerProviderStateMixin {
                         ));
                       });
                       context.read<MusicProvider>().musicModelGroup = favToMusicModel;
-                      context.read<MusicProvider>().inSession = false;
-                      context.read<MusicProvider>().songIndex = 0;
-
-                      Get.to(()=>SongDisplay());
+                      loadMusic(0);
                     },
                   );
                 },
@@ -213,15 +213,6 @@ class _LibraryState extends State<Library>with SingleTickerProviderStateMixin {
                   ),
                 ],
               ),
-        persistentFooterButtons: [
-          Consumer<MusicProvider>(builder: (context, music, child) {
-            if (music.isPlaying) {
-              return const SongWidget();
-            } else {
-              return const SizedBox();
-            }
-          })
-        ],
       );
     });
   }

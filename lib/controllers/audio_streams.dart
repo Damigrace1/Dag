@@ -38,12 +38,17 @@ class AudioStreams{
           ProcessingState.idle;
       }
     });
+    player.processingStateStream.listen((event) {
+
+    });
     player.durationStream.listen((dur) {
       context!.read<MusicProvider>().endV = dur ?? const Duration();
     });
      player.currentIndexStream.listen((index) async {
+       print('indeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee:$index');
         if (context!.read<MusicProvider>().isLocalPlay )
        context.read<MusicProvider>().songIndex = index!;
+
     });
   }
 

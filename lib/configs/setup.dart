@@ -14,22 +14,10 @@ import 'connectivity.dart';
 class Setup {
    init(BuildContext context)async{
      ConnectivityService. initConnectivityService(context);
-   await  stt.initialize();
+     stt.initialize();
      Future.delayed(Duration.zero,()async{
        context.read<MusicProvider>().favSongs = getFavSongs();
-       localMedia = await LocalMedia().getAudioFiles();
-       localMedia.forEach((media) async {
-         if(media.filePath!.endsWith('.mp4')){
-           localVideo.add(VideoData(
-             trackName: media.trackName,
-             filePath: media.filePath,
-             albumArt: await  LocalMedia().getThumbnail(media.filePath!)
-           ));
-         }
-         else {
-           localMusic.add(media);
-         }
-       });
+
      });
      user?.put('isNew', false);
   }
