@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -20,6 +18,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:palette_generator/palette_generator.dart' as pa;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -66,14 +65,57 @@ class _SongDisplayState extends State<SongDisplay>
     super.dispose();
     //positStream?.cancel();
   }
+  Color? backColor;
+  bool isLoadedImageProvider = false;
+  getImagePalette (ImageProvider image) async {
+    if(isLoadedImageProvider){
+      return;
+    }
+  pa.PaletteGenerator.fromImageProvider(image).then((value) {
+    backColor =
+      value.dominantColor?.color;
+        setState(() {});});
+  isLoadedImageProvider = true;
+  }
+//4278190080 black
+  //4294967295
+  colManip(Color col){
+    print(col.alpha);
+    print(col.red);
+    print(col.blue);
+    print(col.green);
+  }
 
+
+
+  int isColorCloseToWhite(Color color, {int threshold = 30}) {
+    // Extract RGB components from the color
+    int red = color.red;
+    int green = color.green;
+    int blue = color.blue;
+
+    // Define the threshold for closeness to white
+    int thresholdSquared = threshold * threshold;
+
+    // Calculate the squared Euclidean distance from white (255, 255, 255)
+    int distanceSquared = (255 - red) * (255 - red) +
+        (255 - green) * (255 - green) +
+        (255 - blue) * (255 - blue);
+print(distanceSquared);
+    // Check if the squared distance is below the threshold
+    return distanceSquared ;
+  }
   @override
   Widget build(BuildContext context) {
+
     return Consumer2<ColorProvider, MusicProvider>(
         builder: (context, color, music, child) {
+         // colManip(Colors.black);
+          // isColorCloseToWhite(Colors.black);
       return Scaffold(
-        backgroundColor: color.scaffoldCol,
+        backgroundColor:Colors.white,
         appBar: AppBar(
+          backgroundColor:Color.fromARGB(255, 170, 170, 170),
           leading: IconButton(
             onPressed: () {
               Get.back();
@@ -87,14 +129,40 @@ class _SongDisplayState extends State<SongDisplay>
             'Music',
             style: CustomTextStyle(color: color.origWhite, fontSize: 18.sp),
           ),
-          backgroundColor: color.scaffoldCol,
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(
-              height: 20.h,
-            ),
+           Container(
+             padding: EdgeInsets.symmetric(horizontal: 10.w,vertical: 7.h),
+             margin: EdgeInsets.symmetric(horizontal: 15.w,vertical: 7.h),
+             decoration: BoxDecoration(
+               borderRadius: BorderRadius.circular(10.r),
+               color: color.primaryCol.withOpacity(0.5),
+             ),
+             child: Column(
+               children: [
+                 Text(
+                   music.musicModelGroup![music.songIndex].title!,
+                   maxLines: 2,
+                   overflow: TextOverflow.ellipsis,
+                   textAlign: TextAlign.center,
+                   style: CustomTextStyle(
+                       color: color.origWhite,
+                       fontSize: 19.sp,
+                       fontWeight: FontWeight.w600),
+                 ),
+                 Text(
+                   music.musicModelGroup![music.songIndex].author ?? '',
+                   overflow: TextOverflow.ellipsis,
+                   style: CustomTextStyle(
+                       color: Colors.grey,
+                       fontSize: 14.sp,
+                       fontWeight: FontWeight.w300),
+                 ),
+               ],
+             ),
+           ),
             Hero(
               tag: 'hero',
               child: CachedNetworkImage(
@@ -108,7 +176,9 @@ class _SongDisplayState extends State<SongDisplay>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Image.asset('images/mus_pla.jpg')),
-                imageBuilder: (context, imageProvider) => DecoratedBox(
+                imageBuilder: (context, imageProvider) {
+                  getImagePalette(imageProvider);
+                 return   DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     image: DecorationImage(
@@ -116,43 +186,20 @@ class _SongDisplayState extends State<SongDisplay>
                       centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
                     ),
                   ),
-                ),
+                );},
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15.w),
-              child: Text(
-                music.musicModelGroup![music.songIndex].title!,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: CustomTextStyle(
-                    color: color.origWhite,
-                    fontSize: 19.sp,
-                    fontWeight: FontWeight.w600),
+
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 15.w,vertical: 7.h),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(topRight: Radius.circular(10.r),
+                topLeft: Radius.circular(10.r)),
+                color: color.primaryCol.withOpacity(0.5),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15.w),
-              child: Text(
-                music.musicModelGroup![music.songIndex].author ?? '',
-                overflow: TextOverflow.ellipsis,
-                style: CustomTextStyle(
-                    color: Colors.grey,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w300),
-              ),
-            ),
-            Flexible(
-                child: SizedBox(
-              height: 20.h,
-            )),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15.w),
-                  child: ProgressBar(
+              child: Column(
+                children: [
+                  ProgressBar(
                     progress: music.sV,
                     buffered: music.bV,
                     total: music.endV,
@@ -162,7 +209,7 @@ class _SongDisplayState extends State<SongDisplay>
                     thumbColor: Colors.white,
                     barHeight: 6.0.h,
                     timeLabelTextStyle:
-                        CustomTextStyle(fontSize: 14.sp, color: Colors.grey),
+                    CustomTextStyle(fontSize: 14.sp, color: Colors.grey),
                     thumbRadius: 11.0.r,
                     onSeek: (duration) async {
                       music.loading = true;
@@ -170,160 +217,159 @@ class _SongDisplayState extends State<SongDisplay>
                       music.loading = false;
                     },
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                        onPressed: () {
-                          if (music.loopMode == PlayMode.all) {
-                            player.setLoopMode(LoopMode.one);
-                            music.loopMode = PlayMode.one;
-                            setState(() {});
-                          } else {
-                            music.loopMode = PlayMode.all;
-                            player.setLoopMode(LoopMode.all);
-                            setState(() {});
-                          }
-                        },
-                        icon: music.loopMode == PlayMode.all
-                            ? const Icon(
-                                Icons.repeat_one_sharp,
-                              )
-                            : const Icon(
-                                Icons.repeat,
-                              )),
-                    Row(
-                      children: [
-                        music.isLocalPlay
-                            ? player.hasPrevious
-                                ? IconButton(
-                                    onPressed: () async {
-                                      MusicOperations().previousSong();
-                                    },
-                                    icon: Icon(
-                                      Icons.skip_previous,
-                                    ))
-                                : const IconButton(
-                                    onPressed: null,
-                                    icon: Icon(
-                                      Icons.skip_previous,
-                                      color: Colors.grey,
-                                    ),
-                                  )
-                            : context.read<MusicProvider>().songIndex > 0
-                                ? IconButton(
-                                    onPressed: () async {
-                                      MusicOperations().previousSong();
-                                    },
-                                    icon: Icon(
-                                      Icons.skip_previous,
-                                    ))
-                                : const IconButton(
-                                    onPressed: null,
-                                    icon: Icon(
-                                      Icons.skip_previous,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                        music.loading
-                            ? const CircularProgressIndicator.adaptive()
-                            : AvatarGlow(
-                                glowColor: color.primaryCol,
-                                endRadius: 32.r,
-                                duration: Duration(milliseconds: 2000),
-                                repeat: true,
-                                animate: !music.play,
-                                showTwoGlows: true,
-                                repeatPauseDuration:
-                                    Duration(milliseconds: 200),
-                                child: CircleAvatar(
-                                  backgroundColor: Colors.white,
-                                  radius: 18.r,
-                                  child: InkWell(
-                                    onTap: () async {
-                                      music.play = !music.play;
-                                      if (!music.play) {
-                                        player.pause();
-                                      } else {
-                                        player.play();
-                                      }
-                                    },
-                                    child: music.play
-                                        ? Icon(
-                                            Icons.pause,
-                                            color: Colors.black,
-                                          )
-                                        : Icon(
-                                            Icons.play_arrow,
-                                            color: Colors.black,
-                                          ),
-                                  ),
-                                )),
-                        music.isLocalPlay
-                            ? player.hasNext
-                                ? IconButton(
-                                    onPressed: () async {
-                                      MusicOperations().nextSong();
-                                    },
-                                    icon: Icon(
-                                      Icons.skip_next,
-                                    ))
-                                : const IconButton(
-                                    onPressed: null,
-                                    icon: Icon(
-                                      Icons.skip_next,
-                                      color: Colors.grey,
-                                    ),
-                                  )
-                            : context.read<MusicProvider>().songIndex <
-                                    context
-                                            .read<MusicProvider>()
-                                            .musicModelGroup!
-                                            .length -
-                                        1
-                                ? IconButton(
-                                    onPressed: () {
-                                      MusicOperations().nextSong();
-                                    },
-                                    icon: Icon(
-                                      Icons.skip_next,
-                                    ))
-                                : const IconButton(
-                                    onPressed: null,
-                                    icon: Icon(
-                                      Icons.skip_next,
-                                      color: Colors.grey,
-                                    ),
-                                  )
-                      ],
-                    ),
-                    if (!music.isLocalPlay)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       IconButton(
                           onPressed: () {
-                            if (music.isFav) {
-                              FavBox.removeFromFavourite(context
-                                  .read<MusicProvider>()
-                                  .favSongs[music.songIndex]
-                                  .id!);
-                              music.isFav = false;
-                              rebuildLibraryPage();
+                            if (music.loopMode == PlayMode.all) {
+                              player.setLoopMode(LoopMode.one);
+                              music.loopMode = PlayMode.one;
                               setState(() {});
                             } else {
-                              music.isFav = true;
-                              MusicOperations().saveToFavourites(context,
-                                  music.musicModelGroup![music.songIndex]);
+                              music.loopMode = PlayMode.all;
+                              player.setLoopMode(LoopMode.all);
+                              setState(() {});
                             }
                           },
-                          icon: music.isFav
-                              ? Icon(
-                                  Icons.favorite_outlined,
-                                  color: color.primaryCol,
-                                )
-                              : Icon(
-                                  Icons.favorite_outline,
-                                  color: color.primaryCol,
-                                )
+                          icon: music.loopMode == PlayMode.all
+                              ? const Icon(
+                            Icons.repeat_one_sharp,
+                          )
+                              : const Icon(
+                            Icons.repeat,
+                          )),
+                      Row(
+                        children: [
+                          music.isLocalPlay
+                              ? player.hasPrevious
+                              ? IconButton(
+                              onPressed: () async {
+                                MusicOperations().previousSong();
+                              },
+                              icon: Icon(
+                                Icons.skip_previous,
+                              ))
+                              : const IconButton(
+                            onPressed: null,
+                            icon: Icon(
+                              Icons.skip_previous,
+                              color: Colors.grey,
+                            ),
+                          )
+                              : context.read<MusicProvider>().songIndex > 0
+                              ? IconButton(
+                              onPressed: () async {
+                                MusicOperations().previousSong();
+                              },
+                              icon: Icon(
+                                Icons.skip_previous,
+                              ))
+                              : const IconButton(
+                            onPressed: null,
+                            icon: Icon(
+                              Icons.skip_previous,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          music.loading
+                              ? const CircularProgressIndicator.adaptive()
+                              : AvatarGlow(
+                              glowColor: color.primaryCol,
+                              endRadius: 32.r,
+                              duration: Duration(milliseconds: 2000),
+                              repeat: true,
+                              animate: !music.play,
+                              showTwoGlows: true,
+                              repeatPauseDuration:
+                              Duration(milliseconds: 200),
+                              child: CircleAvatar(
+                                backgroundColor: Colors.white,
+                                radius: 18.r,
+                                child: InkWell(
+                                  onTap: () async {
+                                    music.play = !music.play;
+                                    if (!music.play) {
+                                      player.pause();
+                                    } else {
+                                      player.play();
+                                    }
+                                  },
+                                  child: music.play
+                                      ? Icon(
+                                    Icons.pause,
+                                    color: Colors.black,
+                                  )
+                                      : Icon(
+                                    Icons.play_arrow,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              )),
+                          music.isLocalPlay
+                              ? player.hasNext
+                              ? IconButton(
+                              onPressed: () async {
+                                MusicOperations().nextSong();
+                              },
+                              icon: Icon(
+                                Icons.skip_next,
+                              ))
+                              : const IconButton(
+                            onPressed: null,
+                            icon: Icon(
+                              Icons.skip_next,
+                              color: Colors.grey,
+                            ),
+                          )
+                              : context.read<MusicProvider>().songIndex <
+                              context
+                                  .read<MusicProvider>()
+                                  .musicModelGroup!
+                                  .length -
+                                  1
+                              ? IconButton(
+                              onPressed: () {
+                                MusicOperations().nextSong();
+                              },
+                              icon: Icon(
+                                Icons.skip_next,
+                              ))
+                              : const IconButton(
+                            onPressed: null,
+                            icon: Icon(
+                              Icons.skip_next,
+                              color: Colors.grey,
+                            ),
+                          )
+                        ],
+                      ),
+                      if (!music.isLocalPlay)
+                        IconButton(
+                            onPressed: () {
+                              if (music.isFav) {
+                                FavBox.removeFromFavourite(context
+                                    .read<MusicProvider>()
+                                    .favSongs[music.songIndex]
+                                    .id!);
+                                music.isFav = false;
+                                rebuildLibraryPage();
+                                setState(() {});
+                              } else {
+                                music.isFav = true;
+                                MusicOperations().saveToFavourites(context,
+                                    music.musicModelGroup![music.songIndex]);
+                              }
+                            },
+                            icon: music.isFav
+                                ? Icon(
+                              Icons.favorite_outlined,
+                              color: color.primaryCol,
+                            )
+                                : Icon(
+                              Icons.favorite_outline,
+                              color: color.primaryCol,
+                            )
 
                           //TODO: downoad disabled due to youtube video sharing terms
                           // IconButton(onPressed: (){
@@ -339,16 +385,16 @@ class _SongDisplayState extends State<SongDisplay>
                           //   };
                           // }, icon:
                           // Icon(Icons.download)),
-                          )
-                    else
-                      IconButton(
-                          onPressed: () {
-                            //    showToast('This feature is coming soon.');
-                          },
-                          icon: Icon(
-                            Icons.playlist_add,
-                            color: Colors.grey,
-                          )
+                        )
+                      else
+                        IconButton(
+                            onPressed: () {
+                              //    showToast('This feature is coming soon.');
+                            },
+                            icon: Icon(
+                              Icons.playlist_add,
+                              color: Colors.grey,
+                            )
 
                           //TODO: downoad disabled due to youtube video sharing terms
                           // IconButton(onPressed: (){
@@ -364,15 +410,15 @@ class _SongDisplayState extends State<SongDisplay>
                           //   };
                           // }, icon:
                           // Icon(Icons.download)),
-                          )
-                  ],
-                ),
-              ],
+                        )
+                    ],
+                  ),
+                ],
+              ),
             ),
-            Flexible(
-                child: SizedBox(
-              height: 5.h,
-            )),
+
+
+
           ],
         ),
       );

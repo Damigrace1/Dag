@@ -68,75 +68,76 @@ class _MusicTabState extends State<MusicTab> with SingleTickerProviderStateMixin
   }
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future:     LocalMedia().fetchLocalSongs(),
-        builder: (context , snapshot){
-          if(snapshot.connectionState == ConnectionState.done){
-         // Future.delayed(Duration.zero,()=> loadBuffer());
-            print('object');
-         return   Container(
-           height: 640.h,
-           child: ListView.builder(
-                shrinkWrap: true,
-                addAutomaticKeepAlives: false,
-                addRepaintBoundaries: false,
-                controller: _scrollController,
-             //   physics: const NeverScrollableScrollPhysics(),
-                itemCount: context.watch<MusicProvider>().localMusicList.length,
-                itemBuilder: (BuildContext ctx, int index) {
-                //  firstLoading = true;
-                  return Padding(
-                      padding: const EdgeInsets.only(top: 5, bottom: 5),
-                      child: ListTile(
-                          leading:  SizedBox(
-                            width: 50.w,
-                            child:
-                            Icon(
-                              CupertinoIcons.music_mic,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          title: Text(
-                            context.read<MusicProvider>().localMusicList[index]
-                                .title ??'',
-                            overflow: TextOverflow.ellipsis,
-                            style: CustomTextStyle(
-                                fontSize: 15.sp, color: Colors.white),
-                          ),
-                          subtitle: Text(context.read<MusicProvider>().localMusicList[index]
-                              .composer ?? 'Unknown ',
-                            overflow: TextOverflow.ellipsis,
-                            style: CustomTextStyle(
-                                fontWeight: FontWeight.w300,
-                                fontSize: 13.sp,
-                                color: Colors.grey),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                  onPressed: () async {},
-                                  icon: Icon(
-                                    Icons.more_vert,
-                                    size: 25.sp,
-                                    color: context
-                                        .read<ColorProvider>()
-                                        .origWhite,
-                                  )),
-                            ],
-                          ),
-                          onTap: () async {
-                            context.read<MusicProvider>().isLocalPlay = true;
-                            int ind = localMusic.indexOf((context.read<MusicProvider>().localMusicList[index]));
-                            loadMusic(ind);
-                          }));
-                },
-              ),
-         );
-          }
-          else{
-          return  Center(child: const CircularProgressIndicator.adaptive());}
-    });
+    return Consumer< MusicProvider>(
+        builder: (context, music,child) {
+          return   FutureBuilder(
+              future:     LocalMedia().fetchLocalSongs(),
+              builder: (context , snapshot){
+                if(snapshot.connectionState == ConnectionState.done){
+                  // Future.delayed(Duration.zero,()=> loadBuffer());
+                  print('object');
+                  return   Container(
+                    height: 640.h,
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      controller: _scrollController,
+                      itemCount: music.localMusicList.length,
+                      itemBuilder: (BuildContext ctx, int index) {
+                        //  firstLoading = true;
+                        return Padding(
+                            padding: const EdgeInsets.only(top: 5, bottom: 5),
+                            child: ListTile(
+                                leading:  SizedBox(
+                                  width: 50.w,
+                                  child:
+                                  Icon(
+                                    CupertinoIcons.music_mic,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                title: Text(
+                                  context.read<MusicProvider>().localMusicList[index]
+                                      .title ??'',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: CustomTextStyle(
+                                      fontSize: 15.sp, color: Colors.white),
+                                ),
+                                subtitle: Text(context.read<MusicProvider>().localMusicList[index]
+                                    .composer ?? 'Unknown ',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: CustomTextStyle(
+                                      fontWeight: FontWeight.w300,
+                                      fontSize: 13.sp,
+                                      color: Colors.grey),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                        onPressed: () async {},
+                                        icon: Icon(
+                                          Icons.more_vert,
+                                          size: 25.sp,
+                                          color: context
+                                              .read<ColorProvider>()
+                                              .origWhite,
+                                        )),
+                                  ],
+                                ),
+                                onTap: () async {
+                                  context.read<MusicProvider>().isLocalPlay = true;
+                                  int ind = localMusic.indexOf((context.read<MusicProvider>().localMusicList[index]));
+                                  loadMusic(ind);
+                                }));
+                      },
+                    ),
+                  );
+                }
+                else{
+                  return  Center(child: const CircularProgressIndicator.adaptive());}
+              });
+        });
+
   }
 }
 

@@ -64,6 +64,8 @@ dependencies:
   video_player:
   video_thumbnail:
   font_awesome_flutter: ^10.5.0
+  palette_generator: ^0.3.3+3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

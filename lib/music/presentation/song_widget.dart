@@ -89,7 +89,8 @@ class SongWidget extends StatelessWidget {
                             ),
                           ),
                           music.loading
-                              ? const CircularProgressIndicator.adaptive()
+                              ?
+                          const CircularProgressIndicator.adaptive()
                               : AvatarGlow(
                               glowColor: color.primaryCol,
                               endRadius: 32.r,
