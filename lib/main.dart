@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:metadata_god/metadata_god.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -32,18 +33,19 @@ Future<void> main()async {
  favBox = await Hive.openBox('favBox');
 searchBox = await Hive.openBox('sBox');
  user = await Hive.openBox('user_details');
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor:
-    Color(0xfff9ce80), // Set the status bar color to transparent
-    systemNavigationBarColor:
-    Colors.black, // Set the systemNavigation bar color to transparent
-  ));
+  // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+  //   statusBarColor:
+  //   Color(0xfff9ce80), // Set the status bar color to transparent
+  //   systemNavigationBarColor:
+  //   Colors.black, // Set the systemNavigation bar color to transparent
+  // ));
 
   // Set the preferred screen orientations for the app (portrait mode only)
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  MetadataGod.initialize();
   runApp(const MyApp());
 }
 
@@ -62,6 +64,9 @@ class MyApp extends StatelessWidget {
             color: Colors.black,
               title: 'Dag',
               theme: ThemeData(
+                bottomSheetTheme: BottomSheetThemeData(
+                  backgroundColor: Colors.transparent
+                ),
                 iconTheme:const IconThemeData(
               color: Colors.white
                 ) ,

@@ -3,6 +3,7 @@ import 'package:dag/models/video_model.dart';
 import 'package:dag/music/data/hive_store.dart';
 import 'package:dag/music/domain/song_model.dart';
 import 'package:dag/utils/enums.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -101,6 +102,7 @@ class MusicProvider  extends ChangeNotifier{
     notifyListeners();
   }
 
+
   Duration _bV = const Duration();
   Duration get bV => _bV;
   set bV (Duration v){
@@ -177,4 +179,12 @@ class MusicProvider  extends ChangeNotifier{
     _isLocalPlay  = val;
     notifyListeners();
   }
+
+  CancelToken _cancelToken = CancelToken();
+  CancelToken get cancelToken => _cancelToken;
+  set cancelToken (CancelToken val){
+    _cancelToken = val;
+    notifyListeners();
+  }
+
 }

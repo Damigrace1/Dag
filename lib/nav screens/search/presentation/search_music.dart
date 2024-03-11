@@ -10,6 +10,7 @@ import 'package:dag/music/domain/song_model.dart';
 import 'package:dag/music/presentation/song_display.dart';
 import 'package:dag/provider/color.dart';
 import 'package:dag/provider/home_provider.dart';
+import 'package:dag/utils/build_search.dart';
 import 'package:dag/utils/custom_textstyles.dart';
 import 'package:dag/utils/search.dart';
 import 'package:dag/views/errorWidget.dart';
@@ -46,21 +47,6 @@ final searchPageKey = GlobalKey();
 class _SearchScreenState extends State<SearchScreen>
     with SingleTickerProviderStateMixin {
   // List<Map<String, dynamic>>? songs;
-  void listenTo(TextEditingController controller) {
-    showToast('Speak to search now');
-    context.read<MusicProvider>().rec = true;
-    stt.listen(
-        onResult: (res) => {
-              if (res.finalResult)
-                {
-                  print(res.recognizedWords),
-                  controller.text = res.recognizedWords,
-                  setState(() {})
-                }
-            },
-        listenMode: ListenMode.dictation);
-    context.read<MusicProvider>().rec = false;
-  }
 
   late FlutterGifController controller;
   @override
@@ -125,68 +111,13 @@ class _SearchScreenState extends State<SearchScreen>
                       SizedBox(
                         width: 10.w,
                       ),
-                      Container(
-                        height: 45.h,
-                        width: 340.w,
-                        child: TextFormField(
-                          autofocus: false,
-                          onChanged: (val) {
-                            if (val.length == 0) {
-                              SearchWidgetController.retrieveSearchList();
-                            }
-                            setState(() {});
-                          },
-                          readOnly: false,
-                          style: CustomTextStyle(color: Colors.white),
-                          controller: searchCont,
-                          decoration: InputDecoration(
-                              hintText: 'Start searching',
-                              hintStyle: CustomTextStyle(
-                                color: Colors.grey,
-                              ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.r),
-                            borderSide: BorderSide(
-                              width: 2,
-                              color: Colors.white54,
-                            ),
-                          ),
-                            focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.r),
-                            borderSide: BorderSide(
-                              width: 2,
-                              color: context.read<ColorProvider>().primaryCol,
-                            ),
-                          ),
-                          suffixIcon: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Consumer<MusicProvider>(
-                                  builder: (context, music, child) {
-                                    return AvatarGlow(
-                                        glowColor: Colors.green,
-                                        endRadius: 20.r,
-                                        duration: Duration(milliseconds: 2000),
-                                        repeat: true,
-                                        animate: music.rec,
-                                        showTwoGlows: true,
-                                        repeatPauseDuration: Duration(milliseconds: 100),
-                                        child: InkWell(
-                                            onTap: () async {
-                                              listenTo(searchCont);
-                                            },
-                                            child: Icon(
-                                              Icons.mic,
-                                              color: Colors.green,
-                                              size: 20.sp,
-                                            )));
-                                  }),
-                            ],
-                          )
-                          ),
-
-                        ),
-                      ),
+                     SearchBox(controller: searchCont,
+                       onChanged: (val) {
+                         if (val.length == 0) {
+                           SearchWidgetController.retrieveSearchList();
+                         }
+                         setState(() {});
+                       },),
 
                       SizedBox(
                         width: 10.w,
@@ -477,4 +408,6 @@ class _SearchScreenState extends State<SearchScreen>
       ),
     );
   }
+
+
 }

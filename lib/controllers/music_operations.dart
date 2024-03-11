@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:palette_generator/palette_generator.dart' as pa;
 
 import 'package:dag/controllers/searchWidgetController.dart';
 import 'package:dag/models/music_model.dart';
@@ -15,6 +17,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../music/presentation/song_display.dart';
 import '../nav screens/search/presentation/search_music.dart';
+import '../provider/color.dart';
 import '../provider/music.dart';
 import '../utils/functions.dart';
 import '../utils/global_declarations.dart';
@@ -75,8 +78,13 @@ class MusicOperations {
 
       context.read<MusicProvider>().sV = Duration.zero;
 
-      final duration;
+      Duration? duration;
       if (!context.read<MusicProvider>().isLocalPlay) {
+        setSongWidgetColor(context
+            .read<MusicProvider>()
+            .musicModelGroup
+            ?.elementAt(index!).imgUrl??'',context);
+        context.read<MusicProvider>().songIndex = index!;
         MusicModel? noUrlModel = context
             .read<MusicProvider>()
             .musicModelGroup
@@ -88,8 +96,10 @@ class MusicOperations {
       } else
       {
         try {
+          context.read<MusicProvider>().songIndex = index!;
           List<MusicModel> musicModels = [];
           localMusic.forEach((mus) {
+
             MusicModel mMod = MusicModel(
                 musicUrl: mus.data,
                 author: mus.composer ?? 'Unknown',
@@ -101,13 +111,17 @@ class MusicOperations {
           });
           List<MusicModel> l1 = musicModels;
           List<MusicModel> l3 =
-              l1.sublist(context.read<MusicProvider>().songIndex, l1.length);
+              l1.sublist(index!, l1.length);
           List<MusicModel> l2 =
-              l1.sublist(0, context.read<MusicProvider>().songIndex);
+              l1.sublist(0, index);
           List<MusicModel> newMusicModelList = l3 + l2;
           context.read<MusicProvider>().songIndex = 0;
           context.read<MusicProvider>().musicModelGroup = newMusicModelList;
-
+          ;
+          setSongWidgetColor(context
+              .read<MusicProvider>()
+              .musicModelGroup
+              ?.elementAt(index!).imgUrl??'',context);
           List<AudioSource> audioSources = [];
           newMusicModelList.forEach((newMusicModel) {
             audioSources.add(
@@ -124,8 +138,9 @@ class MusicOperations {
 
           duration = await player
               .setAudioSource(ConcatenatingAudioSource(children: audioSources));
-        } catch (e) {
-          throw e;
+        }
+        catch (e) {
+          //throw e;
         }
       }
       switch(context.read<MusicProvider>().loopMode){
@@ -138,7 +153,7 @@ class MusicOperations {
         default:   player.setLoopMode(LoopMode.off);
       }
       player.play();
-      context.read<MusicProvider>().endV = duration!;
+      context.read<MusicProvider>().endV = duration??Duration.zero;
       context.read<MusicProvider>().play = true;
       context.read<MusicProvider>().loading = false;
       context.read<MusicProvider>().isPlaying = true;
@@ -204,10 +219,18 @@ class MusicOperations {
       FlutterGifController controller
       )async{
     BuildContext context = homeKey.currentContext!;
+
     SearchWidgetController.saveSearchToHist(
         searchCont.text);
     searchResList = musicMap;
     context.read<MusicProvider>().isLocalPlay = false;
     await MusicOperations().loadPlayGroup();
     loadMusic(index);
-}}
+}
+static setSongWidgetColor(String imageUrl,BuildContext context) async {
+  pa.PaletteGenerator.fromImageProvider(NetworkImage(imageUrl)).then((value) {
+    context.read<ColorProvider>().songWidgetColor =
+        value.dominantColor?.color.withOpacity(0.25)??Colors.green;
+  });
+}
+}

@@ -59,53 +59,87 @@ Future<List<Map<String, dynamic>>> fetchSongsList(String searchQuery) async {
   return searchedList;
 }
 
-void downloadSong() async {
-  Directory? dl = Directory('/storage/emulated/0/Download');
-  if (!await dl.exists()) dl = await getExternalStorageDirectory();
-  Map<Permission, PermissionStatus> statuses = await [
-    Permission.storage,
-  ].request();
 
-  if (statuses[Permission.storage]!.isGranted) {
-    String saveName =
-        "${homeKey.currentContext?.read<MusicProvider>().songGroup![homeKey.currentContext!.read<MusicProvider>().songIndex].title!}.mp3";
-    String savePath = "${dl!.path}/$saveName";
 
-    try {
-      await Dio().download(
-          homeKey.currentContext!
-              .read<MusicProvider>()
-              .songGroup![
-                  homeKey.currentContext!.read<MusicProvider>().songIndex]
-              .songUrl!,
-          savePath, onReceiveProgress: (received, total) {
+Dio dio = Dio();
+void downloadSong(BuildContext context,String name,String url) async {
+
+ context.read<MusicProvider>().cancelToken = CancelToken();
+  PermissionStatus status = PermissionStatus.denied;
+  status = await Permission.audio .request();
+  // if(!await Permission.storage.isGranted){
+  //
+  //   status = await Permission.manageExternalStorage.request();
+  //   print('1');
+  // }
+  // else{
+  //   status = PermissionStatus.granted;
+  //   print('2');
+  // }
+
+  if(!status.isGranted){
+    showToast("No permission to save to storage.",action: SnackBarAction(label: "Open Settings",
+        onPressed: (){
+          openAppSettings();
+        }));
+    print("No permission to read and write.");
+    (fluKey.currentWidget as Flushbar).dismiss();
+    return;
+  }
+  final Directory? appDocDir = await getExternalStorageDirectory();
+ // final String hiddenDirectoryName = 'myHiddenDirectory';
+  final Directory dl = Directory('/storage/emulated/0/Music');
+  try {
+  if (!await dl.exists()) {
+    await dl.create(recursive: true).then((value){});
+  }
+
+    String savePath = "${dl.path}/$name.mp3";
+      await dio.download(
+         await MusicOperations().getUrl(context.read<MusicProvider>()
+              .musicModelGroup![context.read<MusicProvider>().songIndex]
+              .id!),
+          savePath,
+          deleteOnError: false,
+          onReceiveProgress: (received, total) {
         if (total != -1) {
           homeKey.currentContext!.read<MusicProvider>().dlVal =
               received / total;
-          // (received / total * 100).toStringAsFixed(0)
-          //you can build progressbar feature too
+
         }
-      }, cancelToken: cancelToken);
+      },
+          cancelToken:  context.read<MusicProvider>().cancelToken
+      );
       homeKey.currentContext!.read<MusicProvider>().dlVal = 0;
       (fluKey.currentWidget as Flushbar).dismiss();
       showToast("Song downloaded");
     } on DioException catch (e) {
-      print(e.message);
+     // showToast('Could not download song.',duration: 5);
+      (fluKey.currentWidget as Flushbar).dismiss();
+      print('ex:$e');
+    } on Exception catch(e){
+      showToast('An error occurred while downloading the music.',duration: 5);
+      (fluKey.currentWidget as Flushbar).dismiss();
+      print('exec:$e');
     }
-  } else {
-    print("No permission to read and write.");
-  }
+
+
 }
 
-CancelToken cancelToken = CancelToken();
-void showToast(String message) {
+
+void showToast(String message,{
+  SnackBarAction? action,
+  int? duration
+}) {
   BuildContext ctx = homeKey.currentContext!;
+
   final scaffold = ScaffoldMessenger.of(ctx);
   scaffold.showSnackBar(
     SnackBar(
-      backgroundColor: ctx.read<ColorProvider>().primaryCol,
+      backgroundColor: CupertinoColors.systemGrey,
       content: Text(message),
-      duration: const Duration(seconds: 2),
+      action: action,
+      duration:  Duration(seconds: duration??3),
     ),
   );
 }
@@ -131,13 +165,13 @@ void showPersistentSnackbar(BuildContext context, String message) {
       ),
       mainButton: TextButton(
         onPressed: () {
-          cancelToken.cancel();
+          print('cancel called');
+          homeKey.currentContext!.read<MusicProvider>().dlVal = 0;
+          homeKey.currentContext!.read<MusicProvider>().cancelToken.cancel();
           (fluKey.currentWidget as Flushbar).dismiss();
+          showToast('Download has been cancelled.');
         },
-        child: Text(
-          'Cancel',
-          style: CustomTextStyle(color: Colors.red),
-        ),
+        child: Icon(Icons.cancel),
       ),
       showProgressIndicator: false,
       titleText: Text(
@@ -167,14 +201,15 @@ void loadMusic (int ind){
   BuildContext context = homeKey.currentContext!;
   if(context.read<MusicProvider>().isPlayerActive)
     player.dispose();
-  context.read<MusicProvider>().songIndex = ind;
+  // context.read<MusicProvider>().songIndex = ind;
   context.read<MusicProvider>().inSession = false;
   context.read<MusicProvider>().isPlayerActive = true;
   player = AudioPlayer();
+
   if (!context.read<MusicProvider>().inSession) {
     Future.delayed(Duration.zero, () {
       MusicOperations()
-          .playSong(index: context.read<MusicProvider>().songIndex);
+          .playSong(index: ind);
       // if (context.read<MusicProvider>().musicModelGroup!.length == 1)
       //   MusicOperations().loadPlayGroup();
     });

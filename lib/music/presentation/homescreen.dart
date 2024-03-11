@@ -62,9 +62,11 @@ class _HomeScreenState extends State<HomeScreen> {
           key: homeKey,
           backgroundColor: Colors.black,
           body: screens[home.tabIndex],
+
           bottomSheet:
               music.inSession ?
-          SongWidget() : null,
+              SongWidget()
+                  : null,
           bottomNavigationBar: BottomNavigationBar(
             currentIndex:home.tabIndex ,
             selectedItemColor: Colors.green,

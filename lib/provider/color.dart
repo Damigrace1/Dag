@@ -40,4 +40,12 @@ class ColorProvider extends ChangeNotifier{
     _modeStat = val;
     notifyListeners();
   }
+
+
+  Color _songWidgetColor = Color(0xFC2D2D2D);
+  Color get songWidgetColor => _songWidgetColor;
+  set songWidgetColor (Color val){
+    _songWidgetColor = val;
+    notifyListeners();
+  }
 }

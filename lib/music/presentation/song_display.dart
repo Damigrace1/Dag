@@ -35,9 +35,10 @@ class SongDisplay extends StatefulWidget {
   State<SongDisplay> createState() => _SongDisplayState();
 }
 
-late  AudioPlayer player ;
+late AudioPlayer player;
 StreamSubscription? positStream;
 StreamSubscription? bufStream;
+Color? backColor;
 
 class _SongDisplayState extends State<SongDisplay>
     with SingleTickerProviderStateMixin {
@@ -65,57 +66,28 @@ class _SongDisplayState extends State<SongDisplay>
     super.dispose();
     //positStream?.cancel();
   }
-  Color? backColor;
-  bool isLoadedImageProvider = false;
-  getImagePalette (ImageProvider image) async {
-    if(isLoadedImageProvider){
-      return;
-    }
-  pa.PaletteGenerator.fromImageProvider(image).then((value) {
-    backColor =
-      value.dominantColor?.color;
-        setState(() {});});
-  isLoadedImageProvider = true;
-  }
-//4278190080 black
-  //4294967295
-  colManip(Color col){
+
+  colManip(Color col) {
     print(col.alpha);
     print(col.red);
     print(col.blue);
     print(col.green);
   }
 
-
-
-  int isColorCloseToWhite(Color color, {int threshold = 30}) {
-    // Extract RGB components from the color
-    int red = color.red;
-    int green = color.green;
-    int blue = color.blue;
-
-    // Define the threshold for closeness to white
-    int thresholdSquared = threshold * threshold;
-
-    // Calculate the squared Euclidean distance from white (255, 255, 255)
-    int distanceSquared = (255 - red) * (255 - red) +
-        (255 - green) * (255 - green) +
-        (255 - blue) * (255 - blue);
-print(distanceSquared);
-    // Check if the squared distance is below the threshold
-    return distanceSquared ;
+  colorChecker() async{
+    print(await Permission.storage.isGranted);
   }
+
   @override
   Widget build(BuildContext context) {
-
+    colorChecker();
     return Consumer2<ColorProvider, MusicProvider>(
         builder: (context, color, music, child) {
-         // colManip(Colors.black);
-          // isColorCloseToWhite(Colors.black);
       return Scaffold(
-        backgroundColor:Colors.white,
+        backgroundColor: color.songWidgetColor,
         appBar: AppBar(
-          backgroundColor:Color.fromARGB(255, 170, 170, 170),
+          backgroundColor: color.songWidgetColor,
+
           leading: IconButton(
             onPressed: () {
               Get.back();
@@ -123,81 +95,108 @@ print(distanceSquared);
             icon: Icon(
               Icons.keyboard_arrow_left,
               color: color.origWhite,
+              size: 30.sp,
             ),
           ),
           title: Text(
             'Music',
             style: CustomTextStyle(color: color.origWhite, fontSize: 18.sp),
           ),
+          actions: [
+            if(!music.isLocalPlay)
+              IconButton(
+                  onPressed: () {
+                    if (music.isLocalPlay){
+                      showToast('You cannot add a Local music to favourites');
+                    }
+                    else{
+                      if (music.isFav) {
+                        FavBox.removeFromFavourite(context
+                            .read<MusicProvider>()
+                            .favSongs[music.songIndex]
+                            .id!);
+                        music.isFav = false;
+                        rebuildLibraryPage();
+                        setState(() {});
+                      }
+                      else {
+                        music.isFav = true;
+                        MusicOperations().saveToFavourites(
+                            context,
+                            music
+                                .musicModelGroup![music.songIndex]);
+                      }
+                    }
+                  },
+                  icon: music.isFav
+                      ? Icon(
+                    Icons.favorite_outlined,
+                    color: color.primaryCol,
+                  )
+                      : Icon(
+                    Icons.favorite_outline,
+                    color:
+                    !music.isLocalPlay ?
+                    color.primaryCol : Colors.grey,
+                  )),
+          ],
         ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-           Container(
-             padding: EdgeInsets.symmetric(horizontal: 10.w,vertical: 7.h),
-             margin: EdgeInsets.symmetric(horizontal: 15.w,vertical: 7.h),
-             decoration: BoxDecoration(
-               borderRadius: BorderRadius.circular(10.r),
-               color: color.primaryCol.withOpacity(0.5),
-             ),
-             child: Column(
-               children: [
-                 Text(
-                   music.musicModelGroup![music.songIndex].title!,
-                   maxLines: 2,
-                   overflow: TextOverflow.ellipsis,
-                   textAlign: TextAlign.center,
-                   style: CustomTextStyle(
-                       color: color.origWhite,
-                       fontSize: 19.sp,
-                       fontWeight: FontWeight.w600),
-                 ),
-                 Text(
-                   music.musicModelGroup![music.songIndex].author ?? '',
-                   overflow: TextOverflow.ellipsis,
-                   style: CustomTextStyle(
-                       color: Colors.grey,
-                       fontSize: 14.sp,
-                       fontWeight: FontWeight.w300),
-                 ),
-               ],
-             ),
-           ),
-            Hero(
-              tag: 'hero',
-              child: CachedNetworkImage(
-                fit: BoxFit.cover,
-                width: 250.w,
-                height: 300.h,
-                imageUrl: music.musicModelGroup?[music.songIndex].imgUrl ?? '',
-                errorWidget: (context, url, error) => Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: color.blackAcc),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Image.asset('images/mus_pla.jpg')),
-                imageBuilder: (context, imageProvider) {
-                  getImagePalette(imageProvider);
-                 return   DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    image: DecorationImage(
-                      image: imageProvider,
-                      centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
-                    ),
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Column(
+           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    music.musicModelGroup![music.songIndex].title!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: CustomTextStyle(
+                        color: color.origWhite,
+                        fontSize: 19.sp,
+                        fontWeight: FontWeight.w600),
                   ),
-                );},
+                  Text(
+                    music.musicModelGroup![music.songIndex].author ?? '',
+                    overflow: TextOverflow.ellipsis,
+                    style: CustomTextStyle(
+                        color: Colors.grey,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w300),
+                  ),
+                ],
               ),
-            ),
 
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 15.w,vertical: 7.h),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(topRight: Radius.circular(10.r),
-                topLeft: Radius.circular(10.r)),
-                color: color.primaryCol.withOpacity(0.5),
+              Expanded(
+                child: CachedNetworkImage(
+                  fit: BoxFit.fill,
+                  width: double.infinity,
+                  height: double.infinity,
+                  imageUrl:
+                      music.musicModelGroup?[music.songIndex].imgUrl ?? '',
+                  errorWidget: (context, url, error) => Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: color.blackAcc),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Image.asset('images/mus_pla.jpg')),
+                  imageBuilder: (context, imageProvider) {
+                    return DecoratedBox(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          fit: BoxFit.fill,
+                          image: imageProvider,
+                          centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-              child: Column(
+              Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   ProgressBar(
                     progress: music.sV,
@@ -209,7 +208,7 @@ print(distanceSquared);
                     thumbColor: Colors.white,
                     barHeight: 6.0.h,
                     timeLabelTextStyle:
-                    CustomTextStyle(fontSize: 14.sp, color: Colors.grey),
+                        CustomTextStyle(fontSize: 14.sp, color: Colors.grey),
                     thumbRadius: 11.0.r,
                     onSeek: (duration) async {
                       music.loading = true;
@@ -234,192 +233,183 @@ print(distanceSquared);
                           },
                           icon: music.loopMode == PlayMode.all
                               ? const Icon(
-                            Icons.repeat_one_sharp,
-                          )
+                                  Icons.repeat_one_sharp,
+                                )
                               : const Icon(
-                            Icons.repeat,
-                          )),
+                                  Icons.repeat,
+                                )),
                       Row(
                         children: [
                           music.isLocalPlay
                               ? player.hasPrevious
-                              ? IconButton(
-                              onPressed: () async {
-                                MusicOperations().previousSong();
-                              },
-                              icon: Icon(
-                                Icons.skip_previous,
-                              ))
-                              : const IconButton(
-                            onPressed: null,
-                            icon: Icon(
-                              Icons.skip_previous,
-                              color: Colors.grey,
-                            ),
-                          )
+                                  ? IconButton(
+                                      onPressed: () async {
+                                        MusicOperations().previousSong();
+                                      },
+                                      icon: Icon(
+                                        Icons.skip_previous,
+                                      ))
+                                  : const IconButton(
+                                      onPressed: null,
+                                      icon: Icon(
+                                        Icons.skip_previous,
+                                        color: Colors.grey,
+                                      ),
+                                    )
                               : context.read<MusicProvider>().songIndex > 0
-                              ? IconButton(
-                              onPressed: () async {
-                                MusicOperations().previousSong();
-                              },
-                              icon: Icon(
-                                Icons.skip_previous,
-                              ))
-                              : const IconButton(
-                            onPressed: null,
-                            icon: Icon(
-                              Icons.skip_previous,
-                              color: Colors.grey,
-                            ),
-                          ),
+                                  ? IconButton(
+                                      onPressed: () async {
+                                        MusicOperations().previousSong();
+                                      },
+                                      icon: Icon(
+                                        Icons.skip_previous,
+                                      ))
+                                  : const IconButton(
+                                      onPressed: null,
+                                      icon: Icon(
+                                        Icons.skip_previous,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                           music.loading
                               ? const CircularProgressIndicator.adaptive()
                               : AvatarGlow(
-                              glowColor: color.primaryCol,
-                              endRadius: 32.r,
-                              duration: Duration(milliseconds: 2000),
-                              repeat: true,
-                              animate: !music.play,
-                              showTwoGlows: true,
-                              repeatPauseDuration:
-                              Duration(milliseconds: 200),
-                              child: CircleAvatar(
-                                backgroundColor: Colors.white,
-                                radius: 18.r,
-                                child: InkWell(
-                                  onTap: () async {
-                                    music.play = !music.play;
-                                    if (!music.play) {
-                                      player.pause();
-                                    } else {
-                                      player.play();
-                                    }
-                                  },
-                                  child: music.play
-                                      ? Icon(
-                                    Icons.pause,
-                                    color: Colors.black,
-                                  )
-                                      : Icon(
-                                    Icons.play_arrow,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              )),
+                                  glowColor: color.primaryCol,
+                                  endRadius: 32.r,
+                                  duration: Duration(milliseconds: 2000),
+                                  repeat: true,
+                                  animate: !music.play,
+                                  showTwoGlows: true,
+                                  repeatPauseDuration:
+                                      Duration(milliseconds: 200),
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    radius: 18.r,
+                                    child: InkWell(
+                                      onTap: () async {
+                                        music.play = !music.play;
+                                        if (!music.play) {
+                                          player.pause();
+                                        } else {
+                                          player.play();
+                                        }
+                                      },
+                                      child: music.play
+                                          ? Icon(
+                                              Icons.pause,
+                                              color: Colors.black,
+                                            )
+                                          : Icon(
+                                              Icons.play_arrow,
+                                              color: Colors.black,
+                                            ),
+                                    ),
+                                  )),
                           music.isLocalPlay
                               ? player.hasNext
-                              ? IconButton(
-                              onPressed: () async {
-                                MusicOperations().nextSong();
-                              },
-                              icon: Icon(
-                                Icons.skip_next,
-                              ))
-                              : const IconButton(
-                            onPressed: null,
-                            icon: Icon(
-                              Icons.skip_next,
-                              color: Colors.grey,
-                            ),
-                          )
+                                  ? IconButton(
+                                      onPressed: () async {
+                                        MusicOperations().nextSong();
+                                      },
+                                      icon: Icon(
+                                        Icons.skip_next,
+                                      ))
+                                  : const IconButton(
+                                      onPressed: null,
+                                      icon: Icon(
+                                        Icons.skip_next,
+                                        color: Colors.grey,
+                                      ),
+                                    )
                               : context.read<MusicProvider>().songIndex <
-                              context
-                                  .read<MusicProvider>()
-                                  .musicModelGroup!
-                                  .length -
-                                  1
-                              ? IconButton(
-                              onPressed: () {
-                                MusicOperations().nextSong();
-                              },
-                              icon: Icon(
-                                Icons.skip_next,
-                              ))
-                              : const IconButton(
-                            onPressed: null,
-                            icon: Icon(
-                              Icons.skip_next,
-                              color: Colors.grey,
-                            ),
-                          )
+                                      context
+                                              .read<MusicProvider>()
+                                              .musicModelGroup!
+                                              .length -
+                                          1
+                                  ? IconButton(
+                                      onPressed: () {
+                                        MusicOperations().nextSong();
+                                      },
+                                      icon: Icon(
+                                        Icons.skip_next,
+                                      ))
+                                  : const IconButton(
+                                      onPressed: null,
+                                      icon: Icon(
+                                        Icons.skip_next,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+
                         ],
                       ),
-                      if (!music.isLocalPlay)
-                        IconButton(
-                            onPressed: () {
-                              if (music.isFav) {
-                                FavBox.removeFromFavourite(context
-                                    .read<MusicProvider>()
-                                    .favSongs[music.songIndex]
-                                    .id!);
-                                music.isFav = false;
-                                rebuildLibraryPage();
-                                setState(() {});
-                              } else {
-                                music.isFav = true;
-                                MusicOperations().saveToFavourites(context,
-                                    music.musicModelGroup![music.songIndex]);
-                              }
-                            },
-                            icon: music.isFav
-                                ? Icon(
-                              Icons.favorite_outlined,
-                              color: color.primaryCol,
-                            )
-                                : Icon(
-                              Icons.favorite_outline,
-                              color: color.primaryCol,
-                            )
+SizedBox()
+                      // Container(
+                      //   // padding: EdgeInsets.symmetric(
+                      //   //   horizontal: 15.w,
+                      //   //   vertical: 3.h
+                      //   // ),
+                      //   margin: EdgeInsets.symmetric(
+                      //     horizontal: 15.w,
+                      //   ),
+                      //   // decoration: BoxDecoration(
+                      //   //   borderRadius: BorderRadius.circular(5.r),
+                      //   //   color: color.primaryCol.withOpacity(0.2)
+                      //   // ),
+                      //   child: InkWell(onTap: ()async{
+                      //     showPersistentSnackbar(context, 'message');
+                      //     String url = await MusicOperations().getUrl(music.musicModelGroup![music.songIndex].id??'');
+                      //     if(music.dlVal == 0){
+                      //       downloadSong(context,music.musicModelGroup![music.songIndex].title!,url);
+                      //
+                      //     } else {
+                      //       showToast( 'Download already in progress');
+                      //     };
+                      //   }, child:
+                      //   Icon(Icons.download,color: color.primaryCol,)),
+                      // ),
 
-                          //TODO: downoad disabled due to youtube video sharing terms
-                          // IconButton(onPressed: (){
-                          //   music.dlVal == 0 ?{
-                          //   downloadSong(),
-                          //     showPersistentSnackbar(context, 'message'),
-                          //   }
-                          //       :
-                          //   {
-                          //
-                          //     showToast(context,
-                          //     'Download already in progress')
-                          //   };
-                          // }, icon:
-                          // Icon(Icons.download)),
-                        )
-                      else
-                        IconButton(
-                            onPressed: () {
-                              //    showToast('This feature is coming soon.');
-                            },
-                            icon: Icon(
-                              Icons.playlist_add,
-                              color: Colors.grey,
-                            )
 
-                          //TODO: downoad disabled due to youtube video sharing terms
-                          // IconButton(onPressed: (){
-                          //   music.dlVal == 0 ?{
-                          //   downloadSong(),
-                          //     showPersistentSnackbar(context, 'message'),
-                          //   }
-                          //       :
-                          //   {
-                          //
-                          //     showToast(context,
-                          //     'Download already in progress')
-                          //   };
-                          // }, icon:
-                          // Icon(Icons.download)),
-                        )
+
+
+                      ///
+                      // else
+                      //   IconButton(
+                      //       onPressed: () {
+                      //         //    showToast('This feature is coming soon.');
+                      //       },
+                      //       icon: Icon(
+                      //         Icons.playlist_add,
+                      //         color: Colors.grey,
+                      //       )
+
+                      //TODO: downoad disabled due to youtube video sharing terms
+                      // IconButton(onPressed: (){
+                      //   music.dlVal == 0 ?{
+                      //   downloadSong(),
+                      //     showPersistentSnackbar(context, 'message'),
+                      //   }
+                      //       :
+                      //   {
+                      //
+                      //     showToast(context,
+                      //     'Download already in progress')
+                      //   };
+                      // }, icon:
+                      // Icon(Icons.download)),
+                      //    )
                     ],
                   ),
                 ],
               ),
-            ),
 
-
-
-          ],
+              // Flexible(
+              //     child: SizedBox(
+              //   height: 5.h,
+              // )),
+            ],
+          ),
         ),
       );
     });

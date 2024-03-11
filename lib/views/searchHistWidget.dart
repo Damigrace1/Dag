@@ -31,7 +31,7 @@ class SearchHistWidget extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 text,
-              overflow: TextOverflow.fade,
+              overflow: TextOverflow.ellipsis,
               maxLines: 1,
               style: CustomTextStyle(color: Colors.white,fontSize: 15.sp),),
             ),

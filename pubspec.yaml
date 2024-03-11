@@ -46,7 +46,7 @@ dependencies:
   audio_video_progress_bar:
   shimmer:
   path_provider:
-  dio:
+  dio: ^5.4.0
   another_flushbar:
   just_audio_background:
   hive:
@@ -59,12 +59,16 @@ dependencies:
   flutter_media_metadata:
   google_fonts:
   flutter_gif:
-  on_audio_query:
+  on_audio_query: ^2.9.0
   file_manager:
   video_player:
   video_thumbnail:
   font_awesome_flutter: ^10.5.0
   palette_generator: ^0.3.3+3
+  metadata_god: ^0.5.2+1
+  pointycastle: ^3.7.4
+  crypto: ^3.0.3
+
 
 dev_dependencies:
   flutter_test:

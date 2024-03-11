@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dag/configs/permission.dart';
 import 'package:dag/music/presentation/homescreen.dart';
 import 'package:dag/music/presentation/song_display.dart';
+import 'package:dag/utils/build_search.dart';
 import 'package:dag/views/video_play.dart';
 import 'package:dag/views/video_tab.dart';
 
@@ -70,7 +71,7 @@ void listenTo(TextEditingController controller) {
           {
             print(res.recognizedWords),
             controller.text = res.recognizedWords,
-            setState(() {})
+            LocalMedia().searchMusic(res.recognizedWords)
           }
       },
       listenMode: ListenMode.dictation);
@@ -102,74 +103,21 @@ ScrollController _scrollController2 = ScrollController();
                       SizedBox(
                         width: 10.w,
                       ),
-                      SizedBox(
-                        height: 45.h,
-                        width: 340.w,
-                        child: TextFormField(
-                          autofocus: false,
-                          onChanged: (val) {
-                            if (val.length == 0) {
-                              //  context.read<MusicProvider>().localVideoList = localVideo;
-                              context.read<MusicProvider>().localMusicList;
-                            }
-                            else{
-                              //tabController.index == 0 ?
-                              LocalMedia().searchMusic(val) ;
-                              //  LocalMedia().searchVideo(val);
-                            }
+                   SearchBox(controller: localMediaSearchCont,
 
-                          },
-                          readOnly: false,
-                          style: CustomTextStyle(color: Colors.white),
-                          controller: localMediaSearchCont,
-                          decoration: InputDecoration(
-                              hintText: 'Start searching',
-                              hintStyle: CustomTextStyle(
-                                color: Colors.grey,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.r),
-                                borderSide: BorderSide(
-                                  width: 2,
-                                  color: Colors.white54,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.r),
-                                borderSide: BorderSide(
-                                  width: 2,
-                                  color: context.read<ColorProvider>().primaryCol,
-                                ),
-                              ),
-                              suffixIcon: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Consumer<MusicProvider>(
-                                      builder: (context, music, child) {
-                                        return AvatarGlow(
-                                            glowColor: Colors.green,
-                                            endRadius: 20.r,
-                                            duration: Duration(milliseconds: 2000),
-                                            repeat: true,
-                                            animate: music.rec,
-                                            showTwoGlows: true,
-                                            repeatPauseDuration: Duration(milliseconds: 100),
-                                            child: InkWell(
-                                                onTap: () async {
-                                                  listenTo(localMediaSearchCont);
-                                                },
-                                                child: Icon(
-                                                  Icons.mic,
-                                                  color: Colors.green,
-                                                  size: 20.sp,
-                                                )));
-                                      }),
-                                ],
-                              )
-                          ),
+                     onChanged: (val) {
+                       if (val.length == 0) {
+                         //  context.read<MusicProvider>().localVideoList = localVideo;
+                         context.read<MusicProvider>().localMusicList;
+                       }
+                       else{
+                         //tabController.index == 0 ?
+                         LocalMedia().searchMusic(val) ;
 
-                        ),
-                      ),
+                         //  LocalMedia().searchVideo(val);
+                       }
+
+                     },),
 
                       SizedBox(
                         width: 10.w,
@@ -182,7 +130,8 @@ ScrollController _scrollController2 = ScrollController();
                 leadingWidth: 0,
                 titleSpacing: 0,
                 snap: true,
-              )
+              ),
+
             ];
 
           },

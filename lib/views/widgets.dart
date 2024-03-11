@@ -14,10 +14,9 @@ InkWell suggestedMusic(
     int index,
     FlutterGifController controller
     ) {
-  BuildContext context = homeKey.currentContext!;
   return InkWell(
     onTap: ()async{
-      MusicOperations.playRemoteSong( musicMap??[], index, controller);
+      MusicOperations.playRemoteSong( musicMap, index, controller);
     },
     child: Container(
       margin: EdgeInsets.symmetric(horizontal: 15.w),
