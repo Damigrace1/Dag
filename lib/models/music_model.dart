@@ -16,7 +16,7 @@ class MusicModel {
 
   factory MusicModel.fromJson(Map<String, dynamic> musicMap) {
     return MusicModel(
-      author: musicMap['more_info']['singers'],
+      author: musicMap['authur'],
       title: musicMap['title'],
       id: musicMap['ytid'],
       imgUrl: musicMap['image'],

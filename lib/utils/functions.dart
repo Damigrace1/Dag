@@ -129,14 +129,15 @@ void downloadSong(BuildContext context,String name,String url) async {
 
 void showToast(String message,{
   SnackBarAction? action,
-  int? duration
+  int? duration,
+  Color? color
 }) {
   BuildContext ctx = homeKey.currentContext!;
 
   final scaffold = ScaffoldMessenger.of(ctx);
   scaffold.showSnackBar(
     SnackBar(
-      backgroundColor: CupertinoColors.systemGrey,
+      backgroundColor: color??CupertinoColors.systemGrey,
       content: Text(message),
       action: action,
       duration:  Duration(seconds: duration??3),

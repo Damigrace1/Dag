@@ -11,7 +11,6 @@ import 'package:flutter/cupertino.dart';
 //import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:metadata_god/metadata_god.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -24,7 +23,6 @@ import '../views/music_tab.dart';
 
 class LocalMedia {
   List<File> playerFiles = [];
-  List<Metadata> metaDataList = [];
 
  //  Future<List<Metadata>> getAudioFiles() async {
  //    await PermissionHandler().requestFileAccessPermission();
@@ -152,7 +150,7 @@ localMusic = l1+  l2;
   //   for (FileSystemEntity file in files) {
   //     if (file is File) {
   //       loadMusic(file);
-  //     } else if (file is Directory && !file.path.contains('/storage/emulated/0/Android/')) {
+  //     } else if (file is Directory && !file.path.contains('a)) {
   //       readFilesInDirectory(file.path);
   //     }
   //   }

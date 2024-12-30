@@ -60,13 +60,13 @@ class _SearchScreenState extends State<SearchScreen>
       SearchWidgetController.retrieveSearchList();
       setState(() {});
     });
-    _scrollController.addListener((){
-      if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent ){
-        setState(() {
-          showAll = false;
-        });
-      }
-    });
+    // _scrollController.addListener((){
+    //   if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent ){
+    //     setState(() {
+    //       showAll = false;
+    //     });
+    //   }
+    // });
   }
 
   @override

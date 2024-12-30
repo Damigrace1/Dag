@@ -17,7 +17,6 @@ class Setup {
      stt.initialize();
      Future.delayed(Duration.zero,()async{
        context.read<MusicProvider>().favSongs = getFavSongs();
-
      });
      user?.put('isNew', false);
   }

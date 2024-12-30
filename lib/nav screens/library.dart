@@ -206,7 +206,7 @@ class _LibraryState extends State<Library>with SingleTickerProviderStateMixin {
                   Center(
                     child: Text(
                       'No Music found! 😔\n'
-                      'Add some musicdi to your favourites. ',
+                      'Add some music to your favourites. ',
                       textAlign: TextAlign.center,
                       style: CustomTextStyle(color: Colors.grey),
                     ),

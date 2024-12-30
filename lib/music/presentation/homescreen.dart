@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:upgrader/upgrader.dart';
 
 import '../../configs/connectivity.dart';
 import '../../controllers/local_media.dart';
@@ -49,44 +50,46 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
-    return Consumer2<HomeProvider,MusicProvider>(builder: (context, home, music,child) {
-      return WillPopScope(
-        onWillPop: () async {
-          if (home.tabIndex != 0) {
-            home.tabIndex = 0;
+    return UpgradeAlert(
+      child: Consumer2<HomeProvider,MusicProvider>(builder: (context, home, music,child) {
+        return WillPopScope(
+          onWillPop: () async {
+            if (home.tabIndex != 0) {
+              home.tabIndex = 0;
+              return false;
+            }
             return false;
-          }
-          return false;
-        },
-        child: Scaffold(
-          key: homeKey,
-          backgroundColor: Colors.black,
-          body: screens[home.tabIndex],
+          },
+          child: Scaffold(
+            key: homeKey,
+            backgroundColor: Colors.black,
+            body: screens[home.tabIndex],
 
-          bottomSheet:
-              music.inSession ?
-              SongWidget()
-                  : null,
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex:home.tabIndex ,
-            selectedItemColor: Colors.green,
-            showUnselectedLabels: true,
-            unselectedItemColor: Colors.grey.shade800,
-            items: <BottomNavigationBarItem>[
+            bottomSheet:
+                music.inSession ?
+                SongWidget()
+                    : null,
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex:home.tabIndex ,
+              selectedItemColor: Colors.green,
+              showUnselectedLabels: true,
+              unselectedItemColor: Colors.grey.shade800,
+              items: <BottomNavigationBarItem>[
 
-              btNav(0,"Home",Icons.home,Icons.home_outlined),
-              btNav(1,"Search",Icons.search,Icons.search_outlined),
-              btNav(2,"Favourites",Icons.favorite,Icons.favorite_border),
-              btNav(3,"Local Music",Icons.folder_rounded,Icons.folder_outlined),
+                btNav(0,"Home",Icons.home,Icons.home_outlined),
+                btNav(1,"Search",Icons.search,Icons.search_outlined),
+                btNav(2,"Favourites",Icons.favorite,Icons.favorite_border),
+                btNav(3,"Local Music",Icons.folder_rounded,Icons.folder_outlined),
 
-            ],
-            onTap: (index) {
-              home.tabIndex = index;
-            },
+              ],
+              onTap: (index) {
+                home.tabIndex = index;
+              },
+            ),
           ),
-        ),
-      );
-    });
+        );
+      }),
+    );
   }
 
   BottomNavigationBarItem btNav(

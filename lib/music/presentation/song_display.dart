@@ -74,7 +74,7 @@ class _SongDisplayState extends State<SongDisplay>
     print(col.green);
   }
 
-  colorChecker() async{
+  colorChecker() async {
     print(await Permission.storage.isGranted);
   }
 
@@ -87,7 +87,6 @@ class _SongDisplayState extends State<SongDisplay>
         backgroundColor: color.songWidgetColor,
         appBar: AppBar(
           backgroundColor: color.songWidgetColor,
-
           leading: IconButton(
             onPressed: () {
               Get.back();
@@ -103,13 +102,12 @@ class _SongDisplayState extends State<SongDisplay>
             style: CustomTextStyle(color: color.origWhite, fontSize: 18.sp),
           ),
           actions: [
-            if(!music.isLocalPlay)
+            if (!music.isLocalPlay)
               IconButton(
                   onPressed: () {
-                    if (music.isLocalPlay){
+                    if (music.isLocalPlay) {
                       showToast('You cannot add a Local music to favourites');
-                    }
-                    else{
+                    } else {
                       if (music.isFav) {
                         FavBox.removeFromFavourite(context
                             .read<MusicProvider>()
@@ -118,33 +116,30 @@ class _SongDisplayState extends State<SongDisplay>
                         music.isFav = false;
                         rebuildLibraryPage();
                         setState(() {});
-                      }
-                      else {
+                      } else {
                         music.isFav = true;
                         MusicOperations().saveToFavourites(
-                            context,
-                            music
-                                .musicModelGroup![music.songIndex]);
+                            context, music.musicModelGroup![music.songIndex]);
                       }
                     }
                   },
                   icon: music.isFav
                       ? Icon(
-                    Icons.favorite_outlined,
-                    color: color.primaryCol,
-                  )
+                          Icons.favorite_outlined,
+                          color: color.primaryCol,
+                        )
                       : Icon(
-                    Icons.favorite_outline,
-                    color:
-                    !music.isLocalPlay ?
-                    color.primaryCol : Colors.grey,
-                  )),
+                          Icons.favorite_outline,
+                          color: !music.isLocalPlay
+                              ? color.primaryCol
+                              : Colors.grey,
+                        )),
           ],
         ),
         body: Padding(
           padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
           child: Column(
-           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 children: [
@@ -168,10 +163,9 @@ class _SongDisplayState extends State<SongDisplay>
                   ),
                 ],
               ),
-
               Expanded(
                 child: CachedNetworkImage(
-                  fit: BoxFit.fill,
+                  fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,
                   imageUrl:
@@ -188,7 +182,7 @@ class _SongDisplayState extends State<SongDisplay>
                         image: DecorationImage(
                           fit: BoxFit.fill,
                           image: imageProvider,
-                          centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
+                         // centerSlice: const Rect.fromLTRB(1, 1, 1, 1),
                         ),
                       ),
                     );
@@ -239,6 +233,7 @@ class _SongDisplayState extends State<SongDisplay>
                                   Icons.repeat,
                                 )),
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           music.isLocalPlay
                               ? player.hasPrevious
@@ -341,37 +336,34 @@ class _SongDisplayState extends State<SongDisplay>
                                         color: Colors.grey,
                                       ),
                                     ),
-
                         ],
                       ),
-SizedBox()
-                      // Container(
-                      //   // padding: EdgeInsets.symmetric(
-                      //   //   horizontal: 15.w,
-                      //   //   vertical: 3.h
-                      //   // ),
-                      //   margin: EdgeInsets.symmetric(
-                      //     horizontal: 15.w,
-                      //   ),
-                      //   // decoration: BoxDecoration(
-                      //   //   borderRadius: BorderRadius.circular(5.r),
-                      //   //   color: color.primaryCol.withOpacity(0.2)
-                      //   // ),
-                      //   child: InkWell(onTap: ()async{
-                      //     showPersistentSnackbar(context, 'message');
-                      //     String url = await MusicOperations().getUrl(music.musicModelGroup![music.songIndex].id??'');
-                      //     if(music.dlVal == 0){
-                      //       downloadSong(context,music.musicModelGroup![music.songIndex].title!,url);
-                      //
-                      //     } else {
-                      //       showToast( 'Download already in progress');
-                      //     };
-                      //   }, child:
-                      //   Icon(Icons.download,color: color.primaryCol,)),
-                      // ),
 
+                      Container(
+                        // padding: EdgeInsets.symmetric(
+                        //   horizontal: 15.w,
+                        //   vertical: 3.h
+                        // ),
+                        margin: EdgeInsets.symmetric(
+                          horizontal: 15.w,
+                        ),
+                        // decoration: BoxDecoration(
+                        //   borderRadius: BorderRadius.circular(5.r),
+                        //   color: color.primaryCol.withOpacity(0.2)
+                        // ),
+                        child: InkWell(onTap: ()async{
+                          showToast('Song cannot be downloaded at this time.',color: Colors.red);
+                         showPersistentSnackbar(context, 'message');
+                          String url = await MusicOperations().getUrl(music.musicModelGroup![music.songIndex].id??'');
+                          if(music.dlVal == 0){
+                            downloadSong(context,music.musicModelGroup![music.songIndex].title!,url);
 
-
+                          } else {
+                            showToast( 'Download already in progress');
+                          };
+                        }, child:
+                        Icon(Icons.download,color: color.primaryCol,)),
+                      ),
 
                       ///
                       // else

@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:metadata_god/metadata_god.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -45,7 +44,6 @@ searchBox = await Hive.openBox('sBox');
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  MetadataGod.initialize();
   runApp(const MyApp());
 }
 
